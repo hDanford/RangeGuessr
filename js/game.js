@@ -4,7 +4,7 @@ const MAX_STATUS_SCORE      = 5000;
 const MAX_TOTAL             = 10000;
 const LOCATION_DECAY_KM     = 2000;  // km at which location score reaches ~0
 const STATUS_POINTS_PER_STEP = 1000; // lose 1000 per IUCN step off
-const STORAGE_KEY           = "wildrange_v2_history";
+const STORAGE_KEY           = "rangeguessr_v2_history";
 
 // ─── Date helpers ─────────────────────────────────────────────────────────────
 function getTodayKey() {
@@ -225,8 +225,8 @@ function buildShareText(result) {
   const a = ANIMALS.find(x => x.id === result.animalId);
   const locBar  = scoreBar(result.locationScore, MAX_LOCATION_SCORE);
   const statBar = scoreBar(result.statusScore, MAX_STATUS_SCORE);
-  const mode = GameState.mode === "daily" ? `Wild Range ${result.date}` : "Wild Range — Free Play";
-  return `${mode}\n${a.emoji} ${a.name}\n📍 Location: ${locBar} ${result.locationScore}\n🏷 Status:   ${statBar} ${result.statusScore}\n🌿 Total: ${result.total}/10000\nhttps://wildrange.game`;
+  const mode = GameState.mode === "daily" ? `RangeGuessr ${result.date}` : "RangeGuessr — Free Play";
+  return `${mode}\n${a.emoji} ${a.name}\n📍 Location: ${locBar} ${result.locationScore}\n🏷 Status:   ${statBar} ${result.statusScore}\n🌿 Total: ${result.total}/10000\nhttps://rangeguessr.game`;
 }
 
 function scoreBar(score, max) {
