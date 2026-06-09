@@ -187,26 +187,26 @@ const UI = {
     document.getElementById("animal-sci").textContent    = a.scientificName || "";
     document.getElementById("animal-hint").textContent   = a.hint;
 
-    // Thumbnail — show image if available, else show emoji placeholder
-    const imgEl   = document.getElementById("animal-img");
-    const emojiEl = document.getElementById("animal-emoji");
+    // Thumbnail — show image if available, else show a link to view it
+    const imgEl      = document.getElementById("animal-img");
+    const fallbackEl = document.getElementById("animal-img-fallback");
+    imgEl.style.display      = "none";
+    fallbackEl.style.display = "none";
     if (a.image) {
-      imgEl.style.display = "none";
-      emojiEl.style.display = "none";
       imgEl.src = a.image;
       imgEl.alt = a.name;
       imgEl.onload = () => {
-        imgEl.style.display = "block";
-        emojiEl.style.display = "none";
+        imgEl.style.display      = "block";
+        fallbackEl.style.display = "none";
       };
       imgEl.onerror = () => {
-        console.warn("Image failed to load for", a.name, a.image);
-        imgEl.style.display = "none";
-        emojiEl.style.display = "flex";
+        imgEl.style.display      = "none";
+        fallbackEl.href          = a.image;
+        fallbackEl.textContent   = `View ${a.name} photo →`;
+        fallbackEl.style.display = "block";
       };
     } else {
-      imgEl.style.display = "none";
-      emojiEl.style.display = "flex";
+      fallbackEl.style.display = "none";
     }
 
     const badge = document.getElementById("status-badge");
