@@ -37,12 +37,14 @@ const ANIMALS = [
 ];
 
 const STATUS_META = {
-  CR: { label: 'Critically Endangered', color: '#791F1F', bg: '#FCEBEB', order: 0 },
-  EN: { label: 'Endangered',            color: '#993C1D', bg: '#FAECE7', order: 1 },
-  VU: { label: 'Vulnerable',            color: '#854F0B', bg: '#FAEEDA', order: 2 },
-  NT: { label: 'Near Threatened',       color: '#3B6D11', bg: '#EAF3DE', order: 3 },
-  LC: { label: 'Least Concern',         color: '#0F6E56', bg: '#E1F5EE', order: 4 },
-  DD: { label: 'Data Deficient',        color: '#444441', bg: '#F1EFE8', order: 5 },
+  EX: { label: 'Extinct',               color: '#3a3a3a', bg: '#E8E8E8', order: 0 },
+  EW: { label: 'Extinct in the Wild',   color: '#4a3060', bg: '#EDE8F5', order: 1 },
+  CR: { label: 'Critically Endangered', color: '#791F1F', bg: '#FCEBEB', order: 2 },
+  EN: { label: 'Endangered',            color: '#993C1D', bg: '#FAECE7', order: 3 },
+  VU: { label: 'Vulnerable',            color: '#854F0B', bg: '#FAEEDA', order: 4 },
+  NT: { label: 'Near Threatened',       color: '#3B6D11', bg: '#EAF3DE', order: 5 },
+  LC: { label: 'Least Concern',         color: '#0F6E56', bg: '#E1F5EE', order: 6 },
+  DD: { label: 'Data Deficient',        color: '#444441', bg: '#F1EFE8', order: 7 },
 };
 
-const STATUS_ORDER = ['CR','EN','VU','NT','LC','DD'];
+const STATUS_ORDER = ['EX','EW','CR','EN','VU','NT','LC','DD'];
