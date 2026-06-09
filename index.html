@@ -49,9 +49,13 @@
 
   <!-- Animal card -->
   <div class="animal-card">
-    <div class="animal-emoji" id="animal-emoji">🐾</div>
+    <div class="animal-thumb" id="animal-thumb">
+      <span class="animal-emoji" id="animal-emoji">🐾</span>
+      <img class="animal-img" id="animal-img" src="" alt="" style="display:none"/>
+    </div>
     <div class="animal-info">
       <div class="animal-name" id="animal-name">Loading…</div>
+      <div class="animal-sci"  id="animal-sci"></div>
       <div class="animal-hint" id="animal-hint"></div>
       <span class="status-badge" id="status-badge" style="display:none"></span>
     </div>
@@ -118,8 +122,12 @@
         </div>
       </div>
     </div>
-    <div class="res-fact"   id="res-fact"></div>
-    <div class="res-region" id="res-region"></div>
+    <div class="res-fact"    id="res-fact"></div>
+    <div class="res-region"  id="res-region"></div>
+    <div class="res-image-wrap" id="res-image-wrap" style="display:none">
+      <img class="res-image" id="res-image" src="" alt=""/>
+      <div class="res-image-credit" id="res-image-credit"></div>
+    </div>
     <div class="result-actions">
       <button class="share-btn"         id="share-btn"      style="display:none">📤 Share</button>
       <button class="freeplay-next-btn" id="freeplay-next"  style="display:none">Next animal →</button>
@@ -197,7 +205,7 @@
 
 <!-- ── Footer ── -->
 <footer>
-  <p>🌿 Wild Range — geography meets conservation &nbsp;|&nbsp; Range data: <a href="https://www.iucnredlist.org" target="_blank" rel="noopener">IUCN Red List</a></p>
+  <p>🌿 Wild Range — geography meets conservation &nbsp;|&nbsp; Occurrence data & images: <a href="https://www.gbif.org" target="_blank" rel="noopener">GBIF.org</a> (CC BY 4.0) &nbsp;|&nbsp; Map: <a href="https://www.naturalearthdata.com" target="_blank" rel="noopener">Natural Earth</a></p>
 </footer>
 
 <!-- Scripts -->
