@@ -1,9 +1,9 @@
-# 🌿 Wild Range
+# 🌿 RangeGuessr
 
 A daily wildlife geography game — click the country where an animal lives in the wild. Built with vanilla HTML/CSS/JS, no backend required.
 
 ## Live at
-👉 `https://[your-username].github.io/wildrange` (after GitHub Pages setup below)
+👉 `https://[your-username].github.io/rangeguessr` (after GitHub Pages setup below)
 
 ---
 
@@ -22,7 +22,7 @@ A daily wildlife geography game — click the country where an animal lives in t
 ## Project structure
 
 ```
-wildrange/
+rangeguessr/
 ├── index.html          # Main page
 ├── css/
 │   └── style.css       # All styles
@@ -38,7 +38,7 @@ wildrange/
 
 ## Deploy to GitHub Pages
 
-1. Create a new GitHub repository (e.g. `wildrange`)
+1. Create a new GitHub repository (e.g. `rangeguessr`)
 2. Push this folder's contents to the `main` branch
 3. Go to **Settings → Pages**
 4. Set source to **Deploy from a branch** → `main` → `/ (root)`
@@ -83,7 +83,7 @@ The daily rotation cycles through all animals using a date hash — adding more 
 
 ## Add a custom domain
 
-1. Buy a domain (e.g. `wildrange.game`)
+1. Buy a domain (e.g. `rangeguessr.game`)
 2. In GitHub Pages settings, set **Custom domain** to your domain
 3. Add a `CNAME` file to the repo root containing just your domain name
 4. Configure your DNS: add a CNAME record pointing to `[username].github.io`
