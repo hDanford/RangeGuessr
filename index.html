@@ -51,7 +51,7 @@
   <div class="animal-card">
     <div class="animal-thumb" id="animal-thumb">
       <span class="animal-emoji" id="animal-emoji">🐾</span>
-      <img class="animal-img" id="animal-img" src="" alt="" style="display:none"/>
+      <img class="animal-img" id="animal-img" src="" alt=""/>
     </div>
     <div class="animal-info">
       <div class="animal-name" id="animal-name">Loading…</div>
@@ -73,15 +73,20 @@
   </div>
   <p class="map-instruction" id="map-instruction">Click the map to place your guess</p>
 
-  <!-- Status picker -->
   <div class="status-picker-wrap">
     <p class="picker-label">Conservation status guess:</p>
     <div class="status-picker">
-      <button class="status-option" data-status="CR">CR — Critically Endangered</button>
-      <button class="status-option" data-status="EN">EN — Endangered</button>
-      <button class="status-option" data-status="VU">VU — Vulnerable</button>
-      <button class="status-option" data-status="NT">NT — Near Threatened</button>
-      <button class="status-option" data-status="LC">LC — Least Concern</button>
+      <div class="status-group status-group--extinct">
+        <button class="status-option" data-status="EX" title="No individuals known to survive anywhere">EX — Extinct</button>
+        <button class="status-option" data-status="EW" title="Survives only in captivity or cultivation">EW — Extinct in the Wild</button>
+      </div>
+      <div class="status-group status-group--threatened">
+        <button class="status-option" data-status="CR">CR — Critically Endangered</button>
+        <button class="status-option" data-status="EN">EN — Endangered</button>
+        <button class="status-option" data-status="VU">VU — Vulnerable</button>
+        <button class="status-option" data-status="NT">NT — Near Threatened</button>
+        <button class="status-option" data-status="LC">LC — Least Concern</button>
+      </div>
     </div>
   </div>
 
@@ -184,6 +189,8 @@
       <div class="how-section">
         <h3>Conservation status levels</h3>
         <div class="status-legend">
+          <div class="legend-row"><span class="legend-badge" style="background:#E8E8E8;color:#3a3a3a">EX</span><span class="legend-desc"><strong>Extinct</strong> — no individuals survive anywhere</span></div>
+          <div class="legend-row"><span class="legend-badge" style="background:#EDE8F5;color:#4a3060">EW</span><span class="legend-desc"><strong>Extinct in the Wild</strong> — survives only in captivity</span></div>
           <div class="legend-row"><span class="legend-badge" style="background:#FCEBEB;color:#791F1F">CR</span><span class="legend-desc"><strong>Critically Endangered</strong> — extremely high risk</span></div>
           <div class="legend-row"><span class="legend-badge" style="background:#FAECE7;color:#993C1D">EN</span><span class="legend-desc"><strong>Endangered</strong> — high risk of extinction</span></div>
           <div class="legend-row"><span class="legend-badge" style="background:#FAEEDA;color:#854F0B">VU</span><span class="legend-desc"><strong>Vulnerable</strong> — high risk if threats continue</span></div>
