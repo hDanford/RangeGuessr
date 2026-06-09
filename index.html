@@ -40,6 +40,7 @@
     <button class="nav-btn"        id="btn-freeplay">Free Play</button>
     <button class="nav-btn"        id="btn-history">History</button>
     <button class="nav-btn"        id="btn-how">How to Play</button>
+    <button class="nav-btn nav-btn--donate" id="btn-donate">♥ Donate</button>
   </nav>
   <div class="streak-badge" id="streak-display"></div>
 </header>
@@ -208,10 +209,42 @@
         <p>Unlimited animals in random order. Score accumulates for your session but doesn't affect your daily streak.</p>
       </div>
     </div>
+  </div>  <!-- Donate -->
+  <div class="modal" id="modal-donate" style="display:none">
+    <div class="modal-header">
+      <span class="modal-title">♥ Support RangeGuessr</span>
+      <button class="modal-close" onclick="UI.closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="donate-hero">
+        <p class="donate-tagline">RangeGuessr is free to play and always will be.</p>
+        <p class="donate-sub">Every donation keeps the game running and directly funds wildlife conservation.</p>
+      </div>
+      <div class="donate-split">
+        <div class="donate-split-item">
+          <span class="donate-split-pct">50%</span>
+          <span class="donate-split-label">Keeps RangeGuessr running — hosting, data, and new animals</span>
+        </div>
+        <div class="donate-split-divider"></div>
+        <div class="donate-split-item">
+          <span class="donate-split-pct donate-split-pct--green">50%</span>
+          <span class="donate-split-label">Donated to wildlife conservation charities</span>
+        </div>
+      </div>
+      <div class="donate-actions">
+        <a class="donate-btn"
+           href="YOUR_STRIPE_PAYMENT_LINK_HERE"
+           target="_blank"
+           rel="noopener"
+           id="donate-stripe-btn">
+          Donate via Stripe →
+        </a>
+        <p class="donate-note">Secure payment powered by Stripe. Any amount helps.</p>
+      </div>
+    </div>
   </div>
-</div>
 
-<!-- ── Footer ── -->
+</div>
 <footer>
   <p>🌿 RangeGuessr — geography meets conservation &nbsp;|&nbsp; Occurrence data & images: <a href="https://www.gbif.org" target="_blank" rel="noopener">GBIF.org</a> (CC BY 4.0) &nbsp;|&nbsp; Map: <a href="https://www.naturalearthdata.com" target="_blank" rel="noopener">Natural Earth</a></p>
 </footer>
