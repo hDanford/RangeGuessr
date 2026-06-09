@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Wild Range — Daily Wildlife Geography Game</title>
+  <meta name="description" content="One guess: click where the animal lives and pick its conservation status. Score up to 10,000 points."/>
+  <meta property="og:title" content="Wild Range"/>
+  <meta property="og:description" content="Daily wildlife geography + conservation game — one guess, 10,000 points."/>
+  <meta name="theme-color" content="#1a3a1a"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <!-- Google AdSense: replace publisher ID below and uncomment when live -->
+  <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
+</head>
+<body>
+
+<!-- ── Top ad ── -->
+<div class="ad-slot" aria-label="Advertisement">
+  <!-- AdSense leaderboard 728×90 — uncomment when live:
+  <ins class="adsbygoogle" style="display:inline-block;width:728px;height:90px"
+       data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX"></ins>
+  <script>(adsbygoogle=window.adsbygoogle||[]).push({});</script>
+  -->
+  <span class="ad-label">Advertisement</span>
+</div>
+
+<!-- ── Header ── -->
+<header>
+  <a class="logo" href="/">
+    <span class="logo-icon">🌿</span>
+    <span>
+      <span class="logo-text">Wild Range</span>
+      <span class="logo-sub">Daily Wildlife Game</span>
+    </span>
+  </a>
+  <nav>
+    <button class="nav-btn active" id="btn-daily">Daily</button>
+    <button class="nav-btn"        id="btn-freeplay">Free Play</button>
+    <button class="nav-btn"        id="btn-history">History</button>
+    <button class="nav-btn"        id="btn-how">How to Play</button>
+  </nav>
+  <div class="streak-badge" id="streak-display"></div>
+</header>
+
+<!-- ── Main ── -->
+<main class="main-wrap">
+  <p class="mode-label" id="mode-label">Daily</p>
+
+  <!-- Animal card -->
+  <div class="animal-card">
+    <div class="animal-emoji" id="animal-emoji">🐾</div>
+    <div class="animal-info">
+      <div class="animal-name" id="animal-name">Loading…</div>
+      <div class="animal-hint" id="animal-hint"></div>
+      <span class="status-badge" id="status-badge" style="display:none"></span>
+    </div>
+  </div>
+
+  <!-- Free play controls -->
+  <div class="freeplay-controls" id="freeplay-controls">
+    <span class="freeplay-score" id="freeplay-score-display"></span>
+  </div>
+
+  <!-- Map -->
+  <div class="map-wrap">
+    <svg id="world-svg" viewBox="0 0 900 460" xmlns="http://www.w3.org/2000/svg"
+         role="img" aria-label="World map — click to place your guess"></svg>
+  </div>
+  <p class="map-instruction" id="map-instruction">Click the map to place your guess</p>
+
+  <!-- Status picker -->
+  <div class="status-picker-wrap">
+    <p class="picker-label">Conservation status guess:</p>
+    <div class="status-picker">
+      <button class="status-option" data-status="CR">CR — Critically Endangered</button>
+      <button class="status-option" data-status="EN">EN — Endangered</button>
+      <button class="status-option" data-status="VU">VU — Vulnerable</button>
+      <button class="status-option" data-status="NT">NT — Near Threatened</button>
+      <button class="status-option" data-status="LC">LC — Least Concern</button>
+    </div>
+  </div>
+
+  <!-- Submit -->
+  <div class="submit-wrap">
+    <button id="submit-btn" disabled>Submit guess</button>
+  </div>
+
+  <!-- Result panel -->
+  <div class="result-panel" id="result-panel">
+    <div class="result-header">
+      <!-- Score ring -->
+      <div class="score-ring-wrap">
+        <svg viewBox="0 0 68 68" width="68" height="68">
+          <circle class="ring-bg" cx="34" cy="34" r="28"/>
+          <circle id="res-ring" cx="34" cy="34" r="28"/>
+        </svg>
+        <div class="score-ring-total">
+          <span id="res-total">0</span>
+          <span class="score-ring-label">/ 10000</span>
+        </div>
+      </div>
+      <!-- Breakdown -->
+      <div class="score-breakdown">
+        <div class="score-row-item">
+          <div class="label">
+            📍 Location
+            <span class="res-detail" id="res-loc-label"></span>
+          </div>
+          <div class="pts" id="res-location-score">0</div>
+        </div>
+        <div class="score-row-item">
+          <div class="label">
+            🏷 Conservation
+            <span class="res-detail" id="res-status-label"></span>
+          </div>
+          <div class="pts" id="res-status-score">0</div>
+        </div>
+      </div>
+    </div>
+    <div class="res-fact"   id="res-fact"></div>
+    <div class="res-region" id="res-region"></div>
+    <div class="result-actions">
+      <button class="share-btn"         id="share-btn"      style="display:none">📤 Share</button>
+      <button class="freeplay-next-btn" id="freeplay-next"  style="display:none">Next animal →</button>
+    </div>
+  </div>
+
+  <!-- Bottom ad -->
+  <div class="ad-slot bottom" aria-label="Advertisement">
+    <!-- AdSense responsive — uncomment when live:
+    <ins class="adsbygoogle" style="display:block"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX"
+         data-ad-format="auto" data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle=window.adsbygoogle||[]).push({});</script>
+    -->
+    <span class="ad-label">Advertisement</span>
+  </div>
+</main>
+
+<!-- ── Modals ── -->
+<div class="modal-overlay" id="modal-overlay">
+
+  <!-- History -->
+  <div class="modal" id="modal-history">
+    <div class="modal-header">
+      <span class="modal-title">📅 Your History</span>
+      <button class="modal-close" id="modal-close">✕</button>
+    </div>
+    <div class="modal-body" id="history-content"></div>
+  </div>
+
+  <!-- How to play -->
+  <div class="modal" id="modal-how" style="display:none">
+    <div class="modal-header">
+      <span class="modal-title">🌿 How to Play</span>
+      <button class="modal-close" onclick="UI.closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="how-section">
+        <h3>One guess</h3>
+        <p>Each day a new animal is revealed. You get <strong>one chance</strong> to do two things:</p>
+        <ul>
+          <li><strong>Click the map</strong> — place a pin where you think the animal lives in the wild</li>
+          <li><strong>Pick a conservation status</strong> — guess its IUCN Red List category</li>
+        </ul>
+        <p style="margin-top:6px">Then hit <strong>Submit</strong>. The range is revealed and you see your score.</p>
+      </div>
+      <div class="how-section">
+        <h3>Scoring — 10,000 points total</h3>
+        <ul>
+          <li><strong>Location (5,000 pts):</strong> Click inside the range = 5,000. Further away = fewer points, decaying over ~2,000 km.</li>
+          <li><strong>Conservation (5,000 pts):</strong> Exact match = 5,000. Each IUCN level off costs 1,000 pts.</li>
+        </ul>
+      </div>
+      <div class="how-section">
+        <h3>Conservation status levels</h3>
+        <div class="status-legend">
+          <div class="legend-row"><span class="legend-badge" style="background:#FCEBEB;color:#791F1F">CR</span><span class="legend-desc"><strong>Critically Endangered</strong> — extremely high risk</span></div>
+          <div class="legend-row"><span class="legend-badge" style="background:#FAECE7;color:#993C1D">EN</span><span class="legend-desc"><strong>Endangered</strong> — high risk of extinction</span></div>
+          <div class="legend-row"><span class="legend-badge" style="background:#FAEEDA;color:#854F0B">VU</span><span class="legend-desc"><strong>Vulnerable</strong> — high risk if threats continue</span></div>
+          <div class="legend-row"><span class="legend-badge" style="background:#EAF3DE;color:#3B6D11">NT</span><span class="legend-desc"><strong>Near Threatened</strong> — close to qualifying</span></div>
+          <div class="legend-row"><span class="legend-badge" style="background:#E1F5EE;color:#0F6E56">LC</span><span class="legend-desc"><strong>Least Concern</strong> — widespread and stable</span></div>
+        </div>
+      </div>
+      <div class="how-section">
+        <h3>Daily streak</h3>
+        <p>Play every day to build your streak. Any score counts — even a low one keeps the streak alive.</p>
+      </div>
+      <div class="how-section">
+        <h3>Free Play</h3>
+        <p>Unlimited animals in random order. Score accumulates for your session but doesn't affect your daily streak.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Footer ── -->
+<footer>
+  <p>🌿 Wild Range — geography meets conservation &nbsp;|&nbsp; Range data: <a href="https://www.iucnredlist.org" target="_blank" rel="noopener">IUCN Red List</a></p>
+</footer>
+
+<!-- Scripts -->
+<script src="data/animals.js"></script>
+<script src="data/countries.js"></script>
+<script src="js/game.js"></script>
+<script src="js/ui.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    UI.init();
+    UI.showDaily();
+  });
+</script>
+</body>
+</html>
