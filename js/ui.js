@@ -145,6 +145,7 @@ const UI = {
     document.getElementById("btn-freeplay").addEventListener("click", () => this.showFreeplay());
     document.getElementById("btn-history").addEventListener("click",  () => this.openModal("history"));
     document.getElementById("btn-how").addEventListener("click",      () => this.openModal("how"));
+    document.getElementById("btn-donate").addEventListener("click",   () => this.openModal("donate"));
     document.getElementById("modal-close").addEventListener("click",  () => this.closeModal());
     document.getElementById("modal-overlay").addEventListener("click", e => {
       if (e.target.id === "modal-overlay") this.closeModal();
@@ -453,6 +454,7 @@ const UI = {
     document.getElementById("modal-overlay").style.display = "flex";
     document.getElementById("modal-history").style.display = type==="history" ? "block" : "none";
     document.getElementById("modal-how").style.display     = type==="how"     ? "block" : "none";
+    document.getElementById("modal-donate").style.display  = type==="donate"  ? "block" : "none";
     if (type === "history") this.renderHistoryCalendar();
   },
 
