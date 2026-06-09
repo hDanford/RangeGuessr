@@ -38,12 +38,17 @@ const UI = {
     ocean.setAttribute("fill","#a8d8ea");
     this.svgEl.appendChild(ocean);
 
-    // Country fills from countries.js
-    Object.entries(COUNTRY_PATHS).forEach(([iso, d]) => {
+    // Country fills from countries.js (Natural Earth data)
+    Object.entries(COUNTRY_PATHS).forEach(([iso, entry]) => {
       const path = document.createElementNS("http://www.w3.org/2000/svg","path");
-      path.setAttribute("d", d);
+      path.setAttribute("d", entry.d);
       path.setAttribute("class","country");
-      path.dataset.iso = iso;
+      path.dataset.iso  = iso;
+      path.dataset.name = entry.name;
+      // Tooltip on hover
+      const title = document.createElementNS("http://www.w3.org/2000/svg","title");
+      title.textContent = entry.name;
+      path.appendChild(title);
       this.svgEl.appendChild(path);
     });
 
@@ -82,8 +87,15 @@ const UI = {
     this.markerEl.style.display = "";
     this.markerEl.setAttribute("transform", `translate(${x},${y})`);
 
+    // Show country name if clicked on one
+    const target = e.target.closest(".country");
+    const countryName = target ? target.dataset.name : null;
+    const locText = countryName
+      ? `📍 ${countryName} (${lat.toFixed(1)}°, ${lng.toFixed(1)}°)`
+      : `📍 ${lat.toFixed(1)}°, ${lng.toFixed(1)}°`;
+
     this.updateSubmitBtn();
-    document.getElementById("map-instruction").textContent = `📍 Selected: ${lat.toFixed(1)}°, ${lng.toFixed(1)}°`;
+    document.getElementById("map-instruction").textContent = locText;
   },
 
   // ── Status picker ─────────────────────────────────────────────────────────
