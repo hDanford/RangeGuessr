@@ -182,7 +182,6 @@ const UI = {
     const a = GameState.animal;
     const meta = STATUS_META[a.status] || STATUS_META["LC"];
 
-    document.getElementById("animal-emoji").textContent  = a.emoji;
     document.getElementById("animal-name").textContent   = a.name;
     document.getElementById("animal-sci").textContent    = a.scientificName || "";
     document.getElementById("animal-hint").textContent   = a.hint;
