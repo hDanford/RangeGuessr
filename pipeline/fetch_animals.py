@@ -1,5 +1,5 @@
 """
-fetch_animals.py  —  Wild Range data pipeline, Step 1
+fetch_animals.py  —  RangeGuessr data pipeline, Step 1
 ──────────────────────────────────────────────────────
 Queries GBIF for each species in SPECIES_LIST:
   • Occurrence points → alpha-shape range polygons
@@ -243,13 +243,18 @@ def get_taxon_key(sci_name):
 def fetch_occurrences(taxon_key):
     points = []; offset = 0
     while len(points) < MAX_OCCURRENCES:
-        params = {
-            "taxonKey": taxon_key, "hasCoordinate": "true",
-            "hasGeospatialIssue": "false", "occurrenceStatus": "PRESENT",
-            "basisOfRecord": "HUMAN_OBSERVATION,MACHINE_OBSERVATION,PRESERVED_SPECIMEN,LITERATURE",
-            "coordinateUncertaintyInMeters": "0,50000",
-            "limit": OCC_PAGE_SIZE, "offset": offset,
-        }
+        # Use list of tuples so basisOfRecord can be repeated (GBIF requirement)
+        params = [
+            ("taxonKey",          taxon_key),
+            ("hasCoordinate",     "true"),
+            ("hasGeospatialIssue","false"),
+            ("basisOfRecord",     "HUMAN_OBSERVATION"),
+            ("basisOfRecord",     "MACHINE_OBSERVATION"),
+            ("basisOfRecord",     "PRESERVED_SPECIMEN"),
+            ("basisOfRecord",     "LITERATURE"),
+            ("limit",             OCC_PAGE_SIZE),
+            ("offset",            offset),
+        ]
         try:
             r = requests.get(GBIF_OCC, params=params, timeout=20)
             r.raise_for_status()
@@ -351,7 +356,7 @@ def run():
     skipped    = []
     total      = len(SPECIES_LIST)
 
-    print(f"\n🌿 Wild Range — GBIF fetch pipeline")
+    print(f"\n🌿 RangeGuessr — GBIF fetch pipeline")
     print(f"   {total} species • skipping already-fetched\n")
 
     for i, entry in enumerate(SPECIES_LIST):
