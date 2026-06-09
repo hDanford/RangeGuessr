@@ -180,11 +180,35 @@ const UI = {
   // ── Game render ───────────────────────────────────────────────────────────
   renderGame() {
     const a = GameState.animal;
-    const meta = STATUS_META[a.status];
+    const meta = STATUS_META[a.status] || STATUS_META["LC"];
 
     document.getElementById("animal-emoji").textContent  = a.emoji;
     document.getElementById("animal-name").textContent   = a.name;
+    document.getElementById("animal-sci").textContent    = a.scientificName || "";
     document.getElementById("animal-hint").textContent   = a.hint;
+
+    // Thumbnail — show image if available, else emoji
+    const imgEl   = document.getElementById("animal-img");
+    const emojiEl = document.getElementById("animal-emoji");
+    if (a.image) {
+      imgEl.src = a.image;
+      imgEl.alt = a.name;
+      imgEl.style.display = "block";
+      emojiEl.style.display = "none";
+      imgEl.onerror = () => {
+        imgEl.style.display = "none";
+        emojiEl.style.display = "";
+      };
+    } else {
+      imgEl.style.display = "none";
+      emojiEl.style.display = "";
+    }
+
+    const badge = document.getElementById("status-badge");
+    badge.textContent      = meta.label;
+    badge.style.background = meta.bg;
+    badge.style.color      = meta.color;
+    badge.style.display    = "inline-block";
 
     if (GameState.mode === "daily") {
       document.getElementById("mode-label").textContent = `Daily — ${getTodayKey()}`;
@@ -201,12 +225,13 @@ const UI = {
     // Reset status picker
     document.querySelectorAll(".status-option").forEach(b => b.classList.remove("selected"));
 
-    // Reset submit
+    // Reset submit + result
     this.updateSubmitBtn();
     document.getElementById("map-instruction").textContent = "Click the map to place your guess";
-    document.getElementById("result-panel").style.display = "none";
-    document.getElementById("share-btn").style.display = "none";
+    document.getElementById("result-panel").style.display  = "none";
+    document.getElementById("share-btn").style.display     = "none";
     document.getElementById("freeplay-next").style.display = "none";
+    document.getElementById("res-image-wrap").style.display = "none";
 
     this.renderStreak();
   },
@@ -306,8 +331,25 @@ const UI = {
       statusLine.className = "res-detail " + (stepsOff === 1 ? "hot" : stepsOff === 2 ? "warm" : "cold");
     }
 
-    document.getElementById("res-fact").textContent = `🔬 ${a.fact}`;
+    document.getElementById("res-fact").textContent   = `🔬 ${a.fact}`;
     document.getElementById("res-region").textContent = `Native range: ${a.region}`;
+
+    // Reveal large photo after guessing
+    const imgWrap  = document.getElementById("res-image-wrap");
+    const resImg   = document.getElementById("res-image");
+    const resCredit= document.getElementById("res-image-credit");
+    if (a.image) {
+      resImg.src = a.image;
+      resImg.alt = a.name;
+      const licenseShort = a.imageLicense
+        ? a.imageLicense.replace("https://creativecommons.org/licenses/","CC ").replace("https://creativecommons.org/publicdomain/","CC ").replace(/\/[\d.]+\/$/,"").toUpperCase()
+        : "";
+      resCredit.textContent = [a.imageCredit, licenseShort].filter(Boolean).join(" · ");
+      imgWrap.style.display = "block";
+      resImg.onerror = () => { imgWrap.style.display = "none"; };
+    } else {
+      imgWrap.style.display = "none";
+    }
 
     // Score ring color
     const pct = result.total / MAX_TOTAL;
