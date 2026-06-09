@@ -208,7 +208,7 @@ const UI = {
     badge.textContent      = meta.label;
     badge.style.background = meta.bg;
     badge.style.color      = meta.color;
-    badge.style.display    = "inline-block";
+    badge.style.display    = "none"; // revealed after guessing
 
     if (GameState.mode === "daily") {
       document.getElementById("mode-label").textContent = `Daily — ${getTodayKey()}`;
@@ -360,6 +360,13 @@ const UI = {
       circumference * (1 - pct);
 
     document.getElementById("result-panel").style.display  = "block";
+    // Reveal the correct status badge now that the guess is in
+    const badge = document.getElementById("status-badge");
+    const correctMeta2 = STATUS_META[a.status] || STATUS_META["LC"];
+    badge.textContent      = correctMeta2.label;
+    badge.style.background = correctMeta2.bg;
+    badge.style.color      = correctMeta2.color;
+    badge.style.display    = "inline-block";
     document.getElementById("share-btn").style.display     = "inline-flex";
     if (GameState.mode === "freeplay") {
       document.getElementById("freeplay-next").style.display = "inline-flex";
