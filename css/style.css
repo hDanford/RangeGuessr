@@ -46,10 +46,10 @@ nav{display:flex;gap:3px;flex-wrap:wrap}
 .mode-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);text-align:center;margin-bottom:.6rem}
 
 /* ── Animal card ── */
-.animal-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.9rem 1.1rem;display:flex;align-items:flex-start;gap:.85rem;margin-bottom:.6rem;box-shadow:var(--shadow-sm)}
-.animal-thumb{flex-shrink:0;width:64px;height:64px;border-radius:var(--radius-md);overflow:hidden;background:var(--green-pale);display:flex;align-items:center;justify-content:center;border:1px solid var(--border)}
-.animal-emoji{font-size:36px;line-height:1;display:flex;align-items:center;justify-content:center;width:100%;height:100%}
+.animal-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.9rem 1.1rem;display:flex;flex-direction:column;gap:.75rem;margin-bottom:.6rem;box-shadow:var(--shadow-sm)}
+.animal-thumb{width:100%;height:256px;border-radius:var(--radius-md);overflow:hidden;background:var(--green-pale);display:flex;align-items:center;justify-content:center;border:1px solid var(--border);position:relative}
 .animal-img{width:100%;height:100%;object-fit:cover;display:none}
+.animal-img-fallback{font-size:13px;font-weight:500;color:var(--green-accent);text-decoration:underline;padding:8px;display:none}
 .animal-info{flex:1;min-width:0}
 .animal-name{font-size:19px;font-weight:600;margin-bottom:1px}
 .animal-sci{font-size:12px;color:var(--text-light);font-style:italic;margin-bottom:3px}
@@ -165,7 +165,7 @@ footer a{color:var(--green-accent);text-decoration:none}
   .logo-sub{display:none}
   .nav-btn{padding:4px 8px;font-size:11px}
   .animal-name{font-size:17px}
-  .animal-emoji{font-size:32px}
+  .animal-thumb{height:180px}
   .status-option{padding:4px 9px;font-size:11px}
   .cal-grid{grid-template-columns:repeat(auto-fill,minmax(50px,1fr))}
   .status-group--extinct .status-option{font-size:10px;padding:4px 8px}
