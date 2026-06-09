@@ -191,11 +191,16 @@ const UI = {
     const imgEl   = document.getElementById("animal-img");
     const emojiEl = document.getElementById("animal-emoji");
     if (a.image) {
+      imgEl.style.display = "none";
+      emojiEl.style.display = "none";
       imgEl.src = a.image;
       imgEl.alt = a.name;
-      imgEl.style.display = "block";
-      emojiEl.style.display = "none";
+      imgEl.onload = () => {
+        imgEl.style.display = "block";
+        emojiEl.style.display = "none";
+      };
       imgEl.onerror = () => {
+        console.warn("Image failed to load for", a.name, a.image);
         imgEl.style.display = "none";
         emojiEl.style.display = "flex";
       };
