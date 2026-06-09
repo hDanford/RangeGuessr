@@ -1,5 +1,5 @@
 """
-build_animals_js.py  —  Wild Range data pipeline, Step 2
+build_animals_js.py  —  RangeGuessr data pipeline, Step 2
 ─────────────────────────────────────────────────────────
 Reads:
   review/animals_meta.csv
@@ -94,7 +94,7 @@ def esc(s):
 
 
 def run():
-    print(f"\n🌿 Wild Range — build pipeline\n")
+    print(f"\n🌿 RangeGuessr — build pipeline\n")
     for p,l in [(META_CSV,"animals_meta.csv"),(RANGES_GEOJSON,"animals_ranges.geojson")]:
         if not os.path.exists(p):
             print(f"❌ Missing: {p} — run fetch_animals.py first"); sys.exit(1)
