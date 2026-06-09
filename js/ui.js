@@ -187,7 +187,7 @@ const UI = {
     document.getElementById("animal-sci").textContent    = a.scientificName || "";
     document.getElementById("animal-hint").textContent   = a.hint;
 
-    // Thumbnail — show image if available, else emoji
+    // Thumbnail — show image if available, else show emoji placeholder
     const imgEl   = document.getElementById("animal-img");
     const emojiEl = document.getElementById("animal-emoji");
     if (a.image) {
@@ -197,11 +197,11 @@ const UI = {
       emojiEl.style.display = "none";
       imgEl.onerror = () => {
         imgEl.style.display = "none";
-        emojiEl.style.display = "";
+        emojiEl.style.display = "flex";
       };
     } else {
       imgEl.style.display = "none";
-      emojiEl.style.display = "";
+      emojiEl.style.display = "flex";
     }
 
     const badge = document.getElementById("status-badge");
@@ -246,9 +246,9 @@ const UI = {
       }).join(" ");
       const polygon = document.createElementNS("http://www.w3.org/2000/svg","polygon");
       polygon.setAttribute("points", pts);
-      polygon.setAttribute("fill","rgba(74,158,74,0.35)");
-      polygon.setAttribute("stroke","#4a9e4a");
-      polygon.setAttribute("stroke-width","1.5");
+      polygon.setAttribute("fill","rgba(255,215,0,0.22)");
+      polygon.setAttribute("stroke","#FFD700");
+      polygon.setAttribute("stroke-width","1.8");
       this.rangeGroupEl.appendChild(polygon);
     });
   },
@@ -281,10 +281,10 @@ const UI = {
     const line = document.createElementNS("http://www.w3.org/2000/svg","line");
     line.setAttribute("x1",g1.x); line.setAttribute("y1",g1.y);
     line.setAttribute("x2",g2.x); line.setAttribute("y2",g2.y);
-    line.setAttribute("stroke","#ff6b35");
+    line.setAttribute("stroke","#FFD700");
     line.setAttribute("stroke-width","1.5");
     line.setAttribute("stroke-dasharray","4 3");
-    line.setAttribute("opacity","0.8");
+    line.setAttribute("opacity","0.9");
     this.rangeGroupEl.appendChild(line);
   },
 
