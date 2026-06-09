@@ -1,193 +1,158 @@
 """
-build_animals_js.py
-───────────────────
-Step 3 of the Wild Range data pipeline.
-
+build_animals_js.py  —  Wild Range data pipeline, Step 2
+─────────────────────────────────────────────────────────
 Reads:
-  review/animals_meta.csv        ← your edited metadata
-  review/animals_ranges.geojson  ← your edited range polygons
+  review/animals_meta.csv
+  review/animals_ranges.geojson
+  review/animals_images.json
 
 Writes:
-  ../data/animals.js             ← ready to drop into the game
-
-Usage:
-  python3 build_animals_js.py
-
-The script validates data, reports any issues, and exits non-zero
-if critical problems are found (missing facts, empty polygons, etc.).
+  ../data/animals.js
 """
 
-import csv
-import json
-import os
-import sys
-import re
+import csv, json, os, sys
 
-REVIEW_DIR    = os.path.join(os.path.dirname(__file__), "review")
-META_CSV      = os.path.join(REVIEW_DIR, "animals_meta.csv")
+REVIEW_DIR     = os.path.join(os.path.dirname(__file__), "review")
+META_CSV       = os.path.join(REVIEW_DIR, "animals_meta.csv")
 RANGES_GEOJSON = os.path.join(REVIEW_DIR, "animals_ranges.geojson")
-OUTPUT_JS     = os.path.join(os.path.dirname(__file__), "..", "data", "animals.js")
+IMAGES_JSON    = os.path.join(REVIEW_DIR, "animals_images.json")
+OUTPUT_JS      = os.path.join(os.path.dirname(__file__), "..", "data", "animals.js")
 
-VALID_STATUSES = {"CR", "EN", "VU", "NT", "LC", "DD", "NE"}
-
-# Maximum polygon vertices to keep per ring — reduces file size for complex coastlines
-MAX_VERTICES = 120
+VALID_STATUSES = {"CR","EN","VU","NT","LC","DD","NE"}
+MAX_VERTICES   = 120
 
 
 def simplify_ring(ring, max_pts):
-    """
-    Reduce a ring to at most max_pts vertices using simple equidistant sampling.
-    Always keeps first and last point (which should be identical for a closed ring).
-    """
-    if len(ring) <= max_pts:
-        return ring
-    # Keep first, last, and evenly-spaced intermediate points
-    step = (len(ring) - 1) / (max_pts - 1)
+    if len(ring) <= max_pts: return ring
+    step = (len(ring)-1)/(max_pts-1)
     indices = set([0, len(ring)-1])
-    for i in range(1, max_pts - 1):
-        indices.add(round(i * step))
+    for i in range(1, max_pts-1): indices.add(round(i*step))
     return [ring[i] for i in sorted(indices)]
 
 
-def load_meta(path):
-    rows = {}
-    warnings = []
-    errors = []
-
-    with open(path, encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        for i, row in enumerate(reader, 2):  # row 2 = first data row
-            animal_id = row.get("id", "").strip()
-            include   = row.get("include", "yes").strip().lower()
-
-            if not animal_id:
-                warnings.append(f"Row {i}: empty id, skipping")
+def load_meta():
+    rows = {}; warnings = []; errors = []
+    with open(META_CSV, encoding="utf-8") as f:
+        for i, row in enumerate(csv.DictReader(f), 2):
+            aid = row.get("id","").strip()
+            if not aid or row.get("include","yes").strip().lower() == "no":
+                if aid: print(f"  ⏭  Skipping {row.get('name','?')}")
                 continue
-            if include == "no":
-                print(f"  ⏭  Skipping {row.get('name','?')} (include=no)")
-                continue
-
-            # Validate required fields
-            name   = row.get("name", "").strip()
-            emoji  = row.get("emoji", "").strip()
-            hint   = row.get("hint", "").strip()
-            status = row.get("status", "").strip().upper()
-            fact   = row.get("fact", "").strip()
-            region = row.get("region", "").strip()
-
-            if not name:
-                errors.append(f"Row {i} ({animal_id}): missing name")
-            if not emoji:
-                warnings.append(f"  ⚠  {name}: missing emoji, defaulting to 🐾")
-                emoji = "🐾"
+            status = row.get("status","LC").strip().upper()
             if status not in VALID_STATUSES:
-                errors.append(f"Row {i} ({name}): invalid status '{status}' — must be one of {VALID_STATUSES}")
-            if not fact:
-                warnings.append(f"  ⚠  {name}: 'fact' column is empty — fill this in for a better game experience")
-            if not hint:
-                warnings.append(f"  ⚠  {name}: 'hint' column is empty")
-            if not region:
-                warnings.append(f"  ⚠  {name}: 'region' column is empty")
-
-            rows[animal_id] = {
-                "id":              animal_id,
-                "scientific_name": row.get("scientific_name", "").strip(),
-                "name":            name,
-                "emoji":           emoji,
-                "hint":            hint or f"A {name}",
+                errors.append(f"Row {i} ({aid}): invalid status '{status}'")
+            if not row.get("fact","").strip():
+                warnings.append(f"  ⚠  {row.get('name','?')}: missing fact")
+            if not row.get("region","").strip():
+                warnings.append(f"  ⚠  {row.get('name','?')}: missing region")
+            rows[aid] = {
+                "id":              aid,
+                "scientific_name": row.get("scientific_name","").strip(),
+                "name":            row.get("name","").strip(),
+                "emoji":           row.get("emoji","🐾").strip(),
+                "hint":            row.get("hint","").strip() or f"A {row.get('name','')}",
                 "status":          status if status in VALID_STATUSES else "LC",
-                "fact":            fact or f"The {name} is a fascinating animal.",
-                "region":          region or "Global",
+                "region":          row.get("region","").strip() or "Global",
+                "fact":            row.get("fact","").strip() or f"The {row.get('name','')} is a fascinating species.",
             }
-
     return rows, warnings, errors
 
 
-def load_ranges(path):
-    with open(path, encoding="utf-8") as f:
-        geojson = json.load(f)
-
+def load_ranges():
+    with open(RANGES_GEOJSON, encoding="utf-8") as f:
+        gj = json.load(f)
     ranges = {}
-    for feature in geojson.get("features", []):
-        props = feature.get("properties", {})
-        animal_id = props.get("id", "").strip()
-        geom = feature.get("geometry", {})
-
-        if not animal_id or not geom:
-            continue
-
-        geom_type = geom.get("type")
-        coords_raw = geom.get("coordinates", [])
-
-        # Normalize all geometry types to list of rings [[{lat,lng},...],...]
+    for feat in gj.get("features",[]):
+        aid  = feat.get("properties",{}).get("id","").strip()
+        geom = feat.get("geometry",{})
+        if not aid or not geom: continue
+        geom_type = geom.get("type"); coords = geom.get("coordinates",[])
         rings = []
-
         if geom_type == "Polygon":
-            # coords_raw = [ exterior_ring, ...holes ]
-            rings.append(coords_raw[0])
-
+            rings.append(coords[0])
         elif geom_type == "MultiPolygon":
-            # coords_raw = [ [ [exterior], ...holes ], ... ]
-            for polygon in coords_raw:
-                if polygon:
-                    rings.append(polygon[0])
-
-        else:
-            print(f"  ⚠  {animal_id}: unsupported geometry type '{geom_type}', skipping")
-            continue
-
-        # Convert GeoJSON [lng, lat] → game format [{lat, lng}]
+            for poly in coords:
+                if poly: rings.append(poly[0])
         converted = []
         for ring in rings:
-            simplified = simplify_ring(ring, MAX_VERTICES)
-            game_ring = [{"lat": round(c[1], 4), "lng": round(c[0], 4)} for c in simplified]
-            # Close the ring if needed
-            if game_ring and game_ring[0] != game_ring[-1]:
-                game_ring.append(game_ring[0])
-            if len(game_ring) >= 4:
-                converted.append(game_ring)
-
-        if converted:
-            ranges[animal_id] = converted
-
+            s = simplify_ring(ring, MAX_VERTICES)
+            gr = [{"lat":round(c[1],4),"lng":round(c[0],4)} for c in s]
+            if gr and gr[0] != gr[-1]: gr.append(gr[0])
+            if len(gr) >= 4: converted.append(gr)
+        if converted: ranges[aid] = converted
     return ranges
 
 
-def escape_js_string(s):
-    """Escape a string for use in a JS single-quoted string."""
-    return s.replace("\\", "\\\\").replace("'", "\\'")
+def load_images():
+    if not os.path.exists(IMAGES_JSON): return {}
+    with open(IMAGES_JSON, encoding="utf-8") as f:
+        return json.load(f)
 
 
-def build_js(meta_rows, ranges):
+def esc(s):
+    return s.replace("\\","\\\\").replace("'","\\'")
+
+
+def run():
+    print(f"\n🌿 Wild Range — build pipeline\n")
+    for p,l in [(META_CSV,"animals_meta.csv"),(RANGES_GEOJSON,"animals_ranges.geojson")]:
+        if not os.path.exists(p):
+            print(f"❌ Missing: {p} — run fetch_animals.py first"); sys.exit(1)
+
+    print(f"📄 Loading metadata...")
+    meta, warnings, errors = load_meta()
+    for w in warnings: print(w)
+    for e in errors:   print(f"  ❌ {e}")
+    if errors: print(f"\n❌ Fix errors above then re-run.\n"); sys.exit(1)
+    print(f"   {len(meta)} species\n")
+
+    print(f"🗺  Loading ranges...")
+    ranges = load_ranges()
+    print(f"   {len(ranges)} species with polygons\n")
+
+    print(f"📷 Loading images...")
+    images = load_images()
+    print(f"   {len(images)} species with images\n")
+
     lines = []
-    lines.append("// AUTO-GENERATED by build_animals_js.py — do not edit directly.")
-    lines.append("// Edit review/animals_meta.csv and review/animals_ranges.geojson, then re-run the script.")
+    lines.append("// AUTO-GENERATED by pipeline/build_animals_js.py")
+    lines.append("// Edit review/animals_meta.csv, animals_ranges.geojson, animals_images.json then re-run")
     lines.append("")
     lines.append("const ANIMALS = [")
 
-    for animal_id, meta in meta_rows.items():
-        polys = ranges.get(animal_id)
+    included = 0
+    for aid, m in meta.items():
+        polys = ranges.get(aid)
         if not polys:
-            print(f"  ⚠  {meta['name']}: no range polygon found — excluded from output")
-            continue
+            print(f"  ⚠  {m['name']}: no range — excluded"); continue
 
-        # Format range polygons
-        poly_lines = []
+        img = images.get(aid, {})
+        img_url    = img.get("url","")
+        img_credit = img.get("rightsHolder","")
+        img_license= img.get("license","")
+
+        # Format polygons
+        poly_strs = []
         for poly in polys:
-            pts = ", ".join(f"{{lat:{p['lat']},lng:{p['lng']}}}" for p in poly)
-            poly_lines.append(f"    [{pts}]")
-        range_str = "[\n" + ",\n".join(poly_lines) + "\n  ]"
+            pts = ",".join(f"{{lat:{p['lat']},lng:{p['lng']}}}" for p in poly)
+            poly_strs.append(f"    [{pts}]")
+        range_str = "[\n" + ",\n".join(poly_strs) + "\n  ]"
 
         lines.append("  {")
-        lines.append(f"    id: '{escape_js_string(animal_id)}',")
-        lines.append(f"    name: '{escape_js_string(meta['name'])}',")
-        lines.append(f"    emoji: '{meta['emoji']}',")
-        lines.append(f"    hint: '{escape_js_string(meta['hint'])}',")
-        lines.append(f"    status: '{meta['status']}',")
-        lines.append(f"    fact: '{escape_js_string(meta['fact'])}',")
-        lines.append(f"    region: '{escape_js_string(meta['region'])}',")
+        lines.append(f"    id: '{esc(aid)}',")
+        lines.append(f"    name: '{esc(m['name'])}',")
+        lines.append(f"    scientificName: '{esc(m['scientific_name'])}',")
+        lines.append(f"    emoji: '{m['emoji']}',")
+        lines.append(f"    hint: '{esc(m['hint'])}',")
+        lines.append(f"    status: '{m['status']}',")
+        lines.append(f"    fact: '{esc(m['fact'])}',")
+        lines.append(f"    region: '{esc(m['region'])}',")
+        lines.append(f"    image: '{esc(img_url)}',")
+        lines.append(f"    imageCredit: '{esc(img_credit)}',")
+        lines.append(f"    imageLicense: '{esc(img_license)}',")
         lines.append(f"    rangePolygons: {range_str},")
         lines.append("  },")
+        included += 1
 
     lines.append("];")
     lines.append("")
@@ -201,63 +166,12 @@ def build_js(meta_rows, ranges):
     lines.append("};")
     lines.append("")
     lines.append("const STATUS_ORDER = ['CR','EN','VU','NT','LC','DD'];")
-    lines.append("")
-
-    return "\n".join(lines)
-
-
-def run():
-    print(f"\n🌿 Wild Range — build pipeline\n")
-
-    # Check inputs exist
-    for path, label in [(META_CSV, "animals_meta.csv"), (RANGES_GEOJSON, "animals_ranges.geojson")]:
-        if not os.path.exists(path):
-            print(f"❌ Missing: {path}")
-            print(f"   Run fetch_animals.py first.\n")
-            sys.exit(1)
-
-    print(f"📄 Loading metadata from {META_CSV}")
-    meta_rows, warnings, errors = load_meta(META_CSV)
-
-    for w in warnings:
-        print(f"  {w}")
-    for e in errors:
-        print(f"  ❌ {e}")
-
-    if errors:
-        print(f"\n❌ {len(errors)} error(s) found — fix the CSV before building.\n")
-        sys.exit(1)
-
-    print(f"  → {len(meta_rows)} species loaded\n")
-
-    print(f"🗺  Loading range polygons from {RANGES_GEOJSON}")
-    ranges = load_ranges(RANGES_GEOJSON)
-    print(f"  → {len(ranges)} species with polygons\n")
-
-    # Check for meta without ranges
-    missing_ranges = [aid for aid in meta_rows if aid not in ranges]
-    if missing_ranges:
-        for aid in missing_ranges:
-            print(f"  ⚠  No polygon for '{aid}' — will be excluded")
-
-    # Build JS
-    js_content = build_js(meta_rows, ranges)
-
-    included = sum(1 for aid in meta_rows if aid in ranges)
-    print(f"\n✅ Building animals.js with {included} species...")
 
     os.makedirs(os.path.dirname(OUTPUT_JS), exist_ok=True)
     with open(OUTPUT_JS, "w", encoding="utf-8") as f:
-        f.write(js_content)
+        f.write("\n".join(lines))
 
-    print(f"✅ Written → {OUTPUT_JS}")
-    print(f"\n── Summary ─────────────────────────────")
-    print(f"   Species included: {included}")
-    print(f"   Species excluded: {len(meta_rows) - included + len(missing_ranges)}")
-    print(f"\n── Next step ───────────────────────────")
-    print(f"   Open the game in your browser to test.")
-    print(f"   Any changes to the CSV/GeoJSON? Re-run this script.\n")
-
+    print(f"✅ Written {included} animals → {OUTPUT_JS}\n")
 
 if __name__ == "__main__":
     run()
