@@ -1,4 +1,4 @@
-# Wild Range — Data Pipeline
+# RangeGuessr — Data Pipeline
 
 This folder contains the two-script pipeline for building `data/animals.js`
 from real GBIF occurrence data.
