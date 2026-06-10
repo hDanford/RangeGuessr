@@ -12,7 +12,7 @@ A daily wildlife geography game — click the country where an animal lives in t
 - **Daily mode** — one new animal per day, seeded by date (same for all players)
 - **Free play** — unlimited random animals with a session score
 - **History calendar** — see every day you've played, your score, and which animal it was
-- **IUCN conservation status** — every animal shows its real Red List status
+- **Conservation status** — every animal shows its real conservation status
 - **Share button** — emoji result card for social media
 - **Streak tracking** — consecutive daily wins
 - **Ad-ready** — Google AdSense slots pre-wired, just uncomment and add your publisher ID
