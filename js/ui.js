@@ -344,22 +344,7 @@ const UI = {
     document.getElementById("res-fact").textContent   = `🔬 ${a.fact}`;
     document.getElementById("res-region").textContent = `Native range: ${a.region}`;
 
-    // Reveal large photo after guessing
-    const imgWrap  = document.getElementById("res-image-wrap");
-    const resImg   = document.getElementById("res-image");
-    const resCredit= document.getElementById("res-image-credit");
-    if (a.image) {
-      resImg.src = a.image;
-      resImg.alt = a.name;
-      const licenseShort = a.imageLicense
-        ? a.imageLicense.replace("https://creativecommons.org/licenses/","CC ").replace("https://creativecommons.org/publicdomain/","CC ").replace(/\/[\d.]+\/$/,"").toUpperCase()
-        : "";
-      resCredit.textContent = [a.imageCredit, licenseShort].filter(Boolean).join(" · ");
-      imgWrap.style.display = "block";
-      resImg.onerror = () => { imgWrap.style.display = "none"; };
-    } else {
-      imgWrap.style.display = "none";
-    }
+
 
     // Score ring color
     const pct = result.total / MAX_TOTAL;
