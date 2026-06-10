@@ -55,6 +55,7 @@
       <img class="animal-img" id="animal-img" src="" alt=""/>
       <a class="animal-img-fallback" id="animal-img-fallback" href="" target="_blank" rel="noopener" style="display:none">View photo →</a>
     </div>
+    <div class="animal-img-credit" id="animal-img-credit"></div>
     <div class="animal-info">
       <div class="animal-name" id="animal-name">Loading…</div>
       <div class="animal-sci"  id="animal-sci"></div>
@@ -92,9 +93,11 @@
     </div>
   </div>
 
-  <!-- Submit -->
+  <!-- Submit + post-answer actions in one row -->
   <div class="submit-wrap">
+    <button class="share-btn"         id="share-btn"     style="display:none">📤 Share</button>
     <button id="submit-btn" disabled>Submit guess</button>
+    <button class="freeplay-next-btn" id="freeplay-next" style="display:none">Next →</button>
   </div>
 
   <!-- Result panel -->
@@ -129,16 +132,8 @@
         </div>
       </div>
     </div>
-    <div class="res-fact"    id="res-fact"></div>
-    <div class="res-region"  id="res-region"></div>
-    <div class="res-image-wrap" id="res-image-wrap" style="display:none">
-      <img class="res-image" id="res-image" src="" alt=""/>
-      <div class="res-image-credit" id="res-image-credit"></div>
-    </div>
-    <div class="result-actions">
-      <button class="share-btn"         id="share-btn"      style="display:none">📤 Share</button>
-      <button class="freeplay-next-btn" id="freeplay-next"  style="display:none">Next animal →</button>
-    </div>
+    <div class="res-fact"   id="res-fact"></div>
+    <div class="res-region" id="res-region"></div>
   </div>
 
   <!-- Bottom ad -->
@@ -251,6 +246,7 @@
 
 <!-- Scripts -->
 <script src="data/animals.js"></script>
+<script src="data/schedule.js"></script>
 <script src="data/countries.js"></script>
 <script src="js/game.js"></script>
 <script src="js/ui.js"></script>
