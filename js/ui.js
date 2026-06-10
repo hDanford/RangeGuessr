@@ -291,7 +291,7 @@ const UI = {
     const line = document.createElementNS("http://www.w3.org/2000/svg","line");
     line.setAttribute("x1",g1.x); line.setAttribute("y1",g1.y);
     line.setAttribute("x2",g2.x); line.setAttribute("y2",g2.y);
-    line.setAttribute("stroke","#FFD700");
+    line.setAttribute("stroke","#a464dc");
     line.setAttribute("stroke-width","1.5");
     line.setAttribute("stroke-dasharray","4 3");
     line.setAttribute("opacity","0.9");
