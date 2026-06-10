@@ -1,469 +1,716 @@
-// ─── Map projection helpers ───────────────────────────────────────────────────
-// Equirectangular: viewBox 0 0 900 460
-const MAP_W = 900, MAP_H = 460;
+/* ─── Reset & base ─────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-function latLngToXY(lat, lng) {
-  const x = (lng + 180) / 360 * MAP_W;
-  const y = (90 - lat) / 180 * MAP_H;
-  return { x, y };
+:root {
+  --forest:     #1a3a1a;
+  --forest-mid: #2e5e2e;
+  --forest-lite:#4a8c4a;
+  --sage:       #8ab88a;
+  --cream:      #f4f1e8;
+  --parchment:  #ede9dc;
+  --ink:        #1c1c1c;
+  --ink-mid:    #444;
+  --ink-lite:   #777;
+  --border:     #d4d0c4;
+  --gold:       #FFD700;
+  --gold-dim:   rgba(255,215,0,0.18);
+  --radius:     10px;
+  --shadow:     0 2px 12px rgba(0,0,0,0.10);
 }
 
-function xyToLatLng(x, y) {
-  const lng = (x / MAP_W) * 360 - 180;
-  const lat = 90 - (y / MAP_H) * 180;
-  return { lat, lng };
+html { font-size: 16px; }
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-// ─── UI ───────────────────────────────────────────────────────────────────────
-const UI = {
-  svgEl: null,
-  markerEl: null,
-  rangeGroupEl: null,
-  resultMarkerEl: null,
+a { color: var(--forest-mid); text-decoration: none; }
+a:hover { text-decoration: underline; }
 
-  init() {
-    this.svgEl = document.getElementById("world-svg");
-    this.buildMapBase();
-    this.bindNav();
-    this.bindStatusPicker();
-    this.bindSubmit();
-    this.renderStreak();
-  },
+/* ─── Ad slots ─────────────────────────────────────────────────────────────── */
+.ad-slot {
+  background: var(--parchment);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  padding: 8px;
+}
+.ad-slot.bottom {
+  border-top: 1px solid var(--border);
+  border-bottom: none;
+  margin-top: 24px;
+}
+.ad-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-lite);
+}
 
-  // ── Map construction ──────────────────────────────────────────────────────
-  buildMapBase() {
-    // Ocean bg
-    const ocean = document.createElementNS("http://www.w3.org/2000/svg","rect");
-    ocean.setAttribute("width","900"); ocean.setAttribute("height","460");
-    ocean.setAttribute("fill","#a8d8ea");
-    this.svgEl.appendChild(ocean);
+/* ─── Header ───────────────────────────────────────────────────────────────── */
+header {
+  background: var(--forest);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  height: 56px;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
 
-    // Country fills from countries.js (Natural Earth data)
-    Object.entries(COUNTRY_PATHS).forEach(([iso, entry]) => {
-      const path = document.createElementNS("http://www.w3.org/2000/svg","path");
-      path.setAttribute("d", entry.d);
-      path.setAttribute("class","country");
-      path.dataset.iso  = iso;
-      path.dataset.name = entry.name;
-      // Tooltip on hover
-      const title = document.createElementNS("http://www.w3.org/2000/svg","title");
-      title.textContent = entry.name;
-      path.appendChild(title);
-      this.svgEl.appendChild(path);
-    });
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: #fff;
+  flex-shrink: 0;
+}
+.logo-icon  { font-size: 1.4rem; line-height: 1; }
+.logo-text  { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.01em; color: #fff; }
+.logo-sub   { display: block; font-size: 0.65rem; color: var(--sage); letter-spacing: 0.05em; }
 
-    // Range highlight group (drawn above countries, below marker)
-    this.rangeGroupEl = document.createElementNS("http://www.w3.org/2000/svg","g");
-    this.rangeGroupEl.setAttribute("id","range-group");
-    this.svgEl.appendChild(this.rangeGroupEl);
+nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  flex-wrap: wrap;
+}
 
-    // Guess marker
-    this.markerEl = document.createElementNS("http://www.w3.org/2000/svg","g");
-    this.markerEl.setAttribute("id","guess-marker");
-    this.markerEl.style.display = "none";
-    this.markerEl.innerHTML = `
-      <circle r="10" fill="none" stroke="#ff6b35" stroke-width="2.5" opacity="0.9"/>
-      <circle r="3"  fill="#ff6b35"/>
-    `;
-    this.svgEl.appendChild(this.markerEl);
+.nav-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: rgba(255,255,255,0.75);
+  padding: 5px 11px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.nav-btn:hover {
+  background: rgba(255,255,255,0.10);
+  color: #fff;
+  border-color: rgba(255,255,255,0.2);
+}
+.nav-btn.active {
+  background: var(--forest-lite);
+  color: #fff;
+  border-color: var(--sage);
+}
+.nav-btn--donate {
+  color: #ffb3b3;
+  border-color: rgba(255,150,150,0.35);
+}
+.nav-btn--donate:hover {
+  background: rgba(255,100,100,0.15);
+  color: #ffcccc;
+}
 
-    // Click handler
-    this.svgEl.addEventListener("click", e => this.handleMapClick(e));
-  },
+.streak-badge {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--gold);
+  margin-left: auto;
+  white-space: nowrap;
+}
 
-  handleMapClick(e) {
-    if (GameState.submitted) return;
-    const rect = this.svgEl.getBoundingClientRect();
-    const scaleX = MAP_W / rect.width;
-    const scaleY = MAP_H / rect.height;
-    const x = (e.clientX - rect.left) * scaleX;
-    const y = (e.clientY - rect.top)  * scaleY;
-    const { lat, lng } = xyToLatLng(x, y);
+/* ─── Main wrap ────────────────────────────────────────────────────────────── */
+.main-wrap {
+  max-width: 860px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 16px 16px 32px;
+  flex: 1;
+}
 
-    GameState.pendingLat = lat;
-    GameState.pendingLng = lng;
+.mode-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-lite);
+  margin-bottom: 10px;
+}
 
-    // Move marker
-    this.markerEl.style.display = "";
-    this.markerEl.setAttribute("transform", `translate(${x},${y})`);
+/* ─── Animal card ──────────────────────────────────────────────────────────── */
+.animal-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  gap: 14px;
+  padding: 14px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+  align-items: flex-start;
+}
 
-    // Show country name if clicked on one
-    const target = e.target.closest(".country");
-    const countryName = target ? target.dataset.name : null;
-    const locText = countryName
-      ? `📍 ${countryName} (${lat.toFixed(1)}°, ${lng.toFixed(1)}°)`
-      : `📍 ${lat.toFixed(1)}°, ${lng.toFixed(1)}°`;
+.animal-thumb {
+  width: 90px;
+  height: 90px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--parchment);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.animal-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.animal-img-fallback {
+  font-size: 0.72rem;
+  text-align: center;
+  color: var(--forest-mid);
+  padding: 4px;
+  line-height: 1.4;
+}
+.animal-img-credit {
+  font-size: 0.65rem;
+  color: var(--ink-lite);
+  margin-top: 4px;
+  line-height: 1.3;
+}
 
-    this.updateSubmitBtn();
-    document.getElementById("map-instruction").textContent = locText;
-  },
+.animal-info { flex: 1; min-width: 0; }
+.animal-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--forest);
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+.animal-sci {
+  font-size: 0.78rem;
+  color: var(--ink-lite);
+  font-style: italic;
+  margin-bottom: 6px;
+}
+.animal-hint {
+  font-size: 0.85rem;
+  color: var(--ink-mid);
+  line-height: 1.5;
+}
 
-  // ── Status picker ─────────────────────────────────────────────────────────
-  bindStatusPicker() {
-    document.querySelectorAll(".status-option").forEach(btn => {
-      btn.addEventListener("click", () => {
-        if (GameState.submitted) return;
-        document.querySelectorAll(".status-option").forEach(b => b.classList.remove("selected"));
-        btn.classList.add("selected");
-        GameState.pendingStatus = btn.dataset.status;
-        this.updateSubmitBtn();
-      });
-    });
-  },
+.status-badge {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
 
-  // ── Submit ────────────────────────────────────────────────────────────────
-  bindSubmit() {
-    document.getElementById("submit-btn").addEventListener("click", () => {
-      if (GameState.pendingLat === null) {
-        this.flashInstruction("Click the map first to place your guess!"); return;
-      }
-      if (!GameState.pendingStatus) {
-        this.flashInstruction("Pick a conservation status first!"); return;
-      }
-      const result = submitGuess();
-      if (result) this.showResult(result);
-    });
-  },
+/* ─── Free play controls ───────────────────────────────────────────────────── */
+.freeplay-controls {
+  display: none;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+  gap: 12px;
+}
+.freeplay-score {
+  font-size: 0.82rem;
+  color: var(--ink-mid);
+  font-weight: 500;
+}
 
-  updateSubmitBtn() {
-    const ready = GameState.pendingLat !== null && GameState.pendingStatus !== null;
-    const btn = document.getElementById("submit-btn");
-    btn.disabled = !ready || GameState.submitted;
-    btn.classList.toggle("ready", ready && !GameState.submitted);
-  },
+/* ─── Map ───────────────────────────────────────────────────────────────────── */
+.map-wrap {
+  border: 2px solid var(--forest-mid);
+  border-radius: var(--radius);
+  overflow: hidden;
+  cursor: crosshair;
+  box-shadow: var(--shadow);
+  margin-bottom: 8px;
+  background: #a8d8ea;
+}
 
-  flashInstruction(msg) {
-    const el = document.getElementById("map-instruction");
-    el.textContent = msg;
-    el.classList.add("flash");
-    setTimeout(() => el.classList.remove("flash"), 1200);
-  },
+#world-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
 
-  // ── Nav ───────────────────────────────────────────────────────────────────
-  bindNav() {
-    document.getElementById("btn-daily").addEventListener("click",    () => this.showDaily());
-    document.getElementById("btn-freeplay").addEventListener("click", () => this.showFreeplay());
-    document.getElementById("btn-history").addEventListener("click",  () => this.openModal("history"));
-    document.getElementById("btn-how").addEventListener("click",      () => this.openModal("how"));
-    document.getElementById("btn-donate").addEventListener("click",   () => this.openModal("donate"));
-    document.getElementById("modal-close").addEventListener("click",  () => this.closeModal());
-    document.getElementById("modal-overlay").addEventListener("click", e => {
-      if (e.target.id === "modal-overlay") this.closeModal();
-    });
-    document.getElementById("freeplay-next").addEventListener("click", () => {
-      nextFreeplayAnimal();
-      this.renderGame();
-    });
-    document.getElementById("share-btn").addEventListener("click", () => this.share());
-  },
+.country {
+  fill: #c8dba0;
+  stroke: #fff;
+  stroke-width: 0.4;
+  transition: fill 0.1s;
+}
+.country:hover { fill: #aec98a; }
 
-  setActiveNav(id) {
-    document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
-  },
+.map-instruction {
+  font-size: 0.82rem;
+  color: var(--ink-mid);
+  text-align: center;
+  margin-bottom: 12px;
+  min-height: 1.4em;
+  transition: color 0.2s;
+}
+.map-instruction.flash {
+  color: #c0392b;
+  font-weight: 600;
+  animation: flashAnim 1.2s ease;
+}
+@keyframes flashAnim {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.5; }
+}
 
-  // ── Screens ───────────────────────────────────────────────────────────────
-  showDaily() {
-    this.setActiveNav("btn-daily");
-    document.getElementById("freeplay-controls").style.display = "none";
-    const init = startDaily();
-    this.renderGame();
-    if (init.alreadyPlayed) this.showResult(init.result, true);
-  },
+/* ─── Status picker ────────────────────────────────────────────────────────── */
+.status-picker-wrap {
+  margin-bottom: 12px;
+}
+.picker-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink-mid);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+.status-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.status-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.status-group--extinct .status-option {
+  background: #f0eef8;
+  border-color: #c8bce0;
+  color: #4a3060;
+}
+.status-group--extinct .status-option:hover {
+  background: #e6e0f5;
+  border-color: #9c88c8;
+}
+.status-group--extinct .status-option.selected {
+  background: #4a3060;
+  border-color: #4a3060;
+  color: #fff;
+}
 
-  showFreeplay() {
-    this.setActiveNav("btn-freeplay");
-    startFreeplay();
-    document.getElementById("freeplay-controls").style.display = "flex";
-    this.renderGame();
-  },
+.status-option {
+  background: var(--parchment);
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  white-space: nowrap;
+}
+.status-option:hover {
+  background: #e8e4d4;
+  border-color: var(--forest-lite);
+}
+.status-option.selected {
+  background: var(--forest);
+  border-color: var(--forest);
+  color: #fff;
+}
 
-  // ── Game render ───────────────────────────────────────────────────────────
-  renderGame() {
-    const a = GameState.animal;
-    const meta = STATUS_META[a.status] || STATUS_META["LC"];
+/* ─── Submit row ───────────────────────────────────────────────────────────── */
+.submit-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
 
-    document.getElementById("animal-name").textContent   = a.name;
-    document.getElementById("animal-sci").textContent    = a.scientificName || "";
-    document.getElementById("animal-hint").textContent   = a.hint;
+#submit-btn {
+  background: var(--border);
+  border: none;
+  border-radius: 8px;
+  color: var(--ink-lite);
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 11px 30px;
+  cursor: not-allowed;
+  transition: background 0.15s, color 0.15s, transform 0.1s;
+}
+#submit-btn.ready {
+  background: var(--forest);
+  color: #fff;
+  cursor: pointer;
+}
+#submit-btn.ready:hover  { background: var(--forest-mid); }
+#submit-btn.ready:active { transform: scale(0.97); }
+#submit-btn:disabled     { opacity: 0.6; cursor: not-allowed; }
 
-    // Thumbnail — show image if available, else show a link to view it
-    const imgEl      = document.getElementById("animal-img");
-    const fallbackEl = document.getElementById("animal-img-fallback");
-    const creditEl   = document.getElementById("animal-img-credit");
-    imgEl.style.display      = "none";
-    fallbackEl.style.display = "none";
-    creditEl.style.display   = "none";
-    if (a.image) {
-      imgEl.src = a.image;
-      imgEl.alt = a.name;
-      imgEl.onload = () => {
-        imgEl.style.display    = "block";
-        fallbackEl.style.display = "none";
-        if (a.imageCredit || a.imageLicense) {
-          creditEl.textContent = [a.imageCredit, a.imageLicense].filter(Boolean).join(" · ");
-          creditEl.style.display = "block";
-        }
-      };
-      imgEl.onerror = () => {
-        imgEl.style.display      = "none";
-        fallbackEl.href          = a.image;
-        fallbackEl.textContent   = `View ${a.name} photo →`;
-        fallbackEl.style.display = "block";
-      };
-    } else {
-      fallbackEl.style.display = "none";
-    }
+.share-btn, .freeplay-next-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  color: var(--ink-mid);
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 9px 18px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+.share-btn:hover, .freeplay-next-btn:hover {
+  background: var(--parchment);
+  border-color: var(--forest-lite);
+}
+.freeplay-next-btn {
+  background: var(--forest);
+  color: #fff;
+  border-color: var(--forest);
+}
+.freeplay-next-btn:hover { background: var(--forest-mid); }
 
-    const badge = document.getElementById("status-badge");
-    badge.textContent      = meta.label;
-    badge.style.background = meta.bg;
-    badge.style.color      = meta.color;
-    badge.style.display    = "none"; // revealed after guessing
+/* ─── Result panel ─────────────────────────────────────────────────────────── */
+.result-panel {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
 
-    if (GameState.mode === "daily") {
-      document.getElementById("mode-label").textContent = `Daily — ${getTodayKey()}`;
-    } else {
-      document.getElementById("mode-label").textContent =
-        `Free Play · Round ${GameState.freeplayRound} · Session: ${GameState.freeplayScore} pts`;
-    }
+.result-header {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
 
-    // Reset map
-    this.clearRange();
-    this.markerEl.style.display = "none";
-    GameState.pendingLat = GameState.pendingLng = GameState.pendingStatus = null;
+/* Score ring */
+.score-ring-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.score-ring-wrap svg { display: block; }
+.ring-bg {
+  fill: none;
+  stroke: var(--parchment);
+  stroke-width: 7;
+}
+#res-ring {
+  fill: none;
+  stroke: #4a9e4a;
+  stroke-width: 7;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+  stroke-dasharray: 175.9;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.6s ease, stroke 0.4s ease;
+}
+.score-ring-total {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+#res-total {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+.score-ring-label {
+  font-size: 0.55rem;
+  color: var(--ink-lite);
+  margin-top: 2px;
+}
 
-    // Reset status picker
-    document.querySelectorAll(".status-option").forEach(b => b.classList.remove("selected"));
+/* Score breakdown */
+.score-breakdown { flex: 1; min-width: 0; }
+.score-row-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--parchment);
+}
+.score-row-item:last-child { border-bottom: none; }
+.score-row-item .label {
+  font-size: 0.82rem;
+  color: var(--ink-mid);
+  font-weight: 500;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.score-row-item .pts {
+  font-size: 1.0rem;
+  font-weight: 700;
+  color: var(--forest);
+  white-space: nowrap;
+}
 
-    // Reset submit + result
-    this.updateSubmitBtn();
-    document.getElementById("map-instruction").textContent = "Click the map to place your guess";
-    document.getElementById("result-panel").style.display  = "none";
-    document.getElementById("share-btn").style.display     = "none";
-    document.getElementById("freeplay-next").style.display = "none";
+/* Result detail tags */
+.res-detail {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 20px;
+  margin-top: 2px;
+  width: fit-content;
+}
+.res-detail.perfect { background: #d4f0d4; color: #1a6a1a; }
+.res-detail.hot     { background: #fff0c8; color: #8a5a00; }
+.res-detail.warm    { background: #ffe8d4; color: #7a4010; }
+.res-detail.cold    { background: #fde8e8; color: #8a1a1a; }
 
-    this.renderStreak();
-  },
+/* Result image */
+#res-image-wrap {
+  text-align: center;
+  margin: 14px 0 8px;
+}
+#res-image {
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+#res-image-credit {
+  font-size: 0.66rem;
+  color: var(--ink-lite);
+  margin-top: 4px;
+}
 
-  // ── Range polygon overlay ─────────────────────────────────────────────────
-  drawRange(rangePolygons) {
-    this.clearRange();
-    rangePolygons.forEach(poly => {
-      const pts = poly.map(p => {
-        const {x,y} = latLngToXY(p.lat, p.lng);
-        return `${x},${y}`;
-      }).join(" ");
-      const polygon = document.createElementNS("http://www.w3.org/2000/svg","polygon");
-      polygon.setAttribute("points", pts);
-      polygon.setAttribute("fill","rgba(255,215,0,0.22)");
-      polygon.setAttribute("stroke","#FFD700");
-      polygon.setAttribute("stroke-width","1.8");
-      this.rangeGroupEl.appendChild(polygon);
-    });
-  },
+/* Fact / region */
+.res-fact, .res-region {
+  font-size: 0.83rem;
+  color: var(--ink-mid);
+  line-height: 1.55;
+  margin-top: 8px;
+}
+.res-fact  { font-style: italic; }
+.res-region { font-weight: 500; }
 
-  clearRange() {
-    while (this.rangeGroupEl && this.rangeGroupEl.firstChild) {
-      this.rangeGroupEl.removeChild(this.rangeGroupEl.firstChild);
-    }
-  },
+/* ─── Modals ───────────────────────────────────────────────────────────────── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
 
-  // Draw a line from guess point to nearest range edge (if outside)
-  drawDistanceLine(guessLat, guessLng, rangePolygons, insideAny) {
-    if (insideAny) return;
-    // Find closest point on any polygon edge
-    let minDist = Infinity, closestLat = 0, closestLng = 0;
-    for (const poly of rangePolygons) {
-      for (let i = 0; i < poly.length; i++) {
-        const a = poly[i], b = poly[(i+1)%poly.length];
-        const dx = b.lng-a.lng, dy = b.lat-a.lat;
-        const lenSq = dx*dx+dy*dy;
-        let t = lenSq > 0 ? ((guessLng-a.lng)*dx+(guessLat-a.lat)*dy)/lenSq : 0;
-        t = Math.max(0,Math.min(1,t));
-        const cLat = a.lat+t*dy, cLng = a.lng+t*dx;
-        const d = haversineKm(guessLat,guessLng,cLat,cLng);
-        if (d < minDist) { minDist=d; closestLat=cLat; closestLng=cLng; }
-      }
-    }
-    const g1 = latLngToXY(guessLat, guessLng);
-    const g2 = latLngToXY(closestLat, closestLng);
-    const line = document.createElementNS("http://www.w3.org/2000/svg","line");
-    line.setAttribute("x1",g1.x); line.setAttribute("y1",g1.y);
-    line.setAttribute("x2",g2.x); line.setAttribute("y2",g2.y);
-    line.setAttribute("stroke","#FFD700");
-    line.setAttribute("stroke-width","1.5");
-    line.setAttribute("stroke-dasharray","4 3");
-    line.setAttribute("opacity","0.9");
-    this.rangeGroupEl.appendChild(line);
-  },
+.modal {
+  background: #fff;
+  border-radius: var(--radius);
+  max-width: 500px;
+  width: 100%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+  overflow: hidden;
+}
 
-  // ── Result ────────────────────────────────────────────────────────────────
-  showResult(result, alreadyPlayed = false) {
-    const a = ANIMALS.find(x => x.id === result.animalId) || GameState.animal;
-    const locLabel = locationLabel(result.distKm, result.insideRange);
-    const correctMeta = STATUS_META[a.status];
-    const guessMeta   = STATUS_META[result.guessStatus] || {};
-    const stepsOff    = Math.abs(STATUS_ORDER.indexOf(result.guessStatus) - STATUS_ORDER.indexOf(a.status));
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  background: var(--forest);
+  color: #fff;
+  flex-shrink: 0;
+}
+.modal-title {
+  font-size: 1rem;
+  font-weight: 700;
+}
+.modal-close {
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.8);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1;
+  transition: background 0.12s;
+}
+.modal-close:hover { background: rgba(255,255,255,0.15); }
 
-    // Draw range + distance line
-    this.drawRange(a.rangePolygons);
-    if (!result.insideRange) {
-      this.drawDistanceLine(result.guessLat, result.guessLng, a.rangePolygons, false);
-    }
+.modal-body {
+  overflow-y: auto;
+  padding: 18px;
+  flex: 1;
+}
 
-    // Move marker to guess location
-    const {x,y} = latLngToXY(result.guessLat, result.guessLng);
-    this.markerEl.setAttribute("transform", `translate(${x},${y})`);
-    this.markerEl.style.display = "";
+/* ─── How to play ──────────────────────────────────────────────────────────── */
+.how-section { margin-bottom: 18px; }
+.how-section h3 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--forest);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.how-section p  { font-size: 0.86rem; color: var(--ink-mid); line-height: 1.6; }
+.how-section ul { padding-left: 18px; font-size: 0.86rem; color: var(--ink-mid); line-height: 1.8; }
 
-    // Highlight guessed status in picker
-    document.querySelectorAll(".status-option").forEach(b => {
-      b.classList.remove("selected");
-      if (b.dataset.status === result.guessStatus) b.classList.add("selected");
-    });
+.status-legend { display: flex; flex-direction: column; gap: 6px; }
+.legend-row    { display: flex; align-items: center; gap: 10px; }
+.legend-badge  {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  min-width: 36px;
+  text-align: center;
+}
+.legend-desc { font-size: 0.82rem; color: var(--ink-mid); }
 
-    // Populate result panel
-    document.getElementById("res-location-score").textContent = result.locationScore;
-    document.getElementById("res-status-score").textContent   = result.statusScore;
-    document.getElementById("res-total").textContent          = result.total;
-    document.getElementById("res-loc-label").textContent      = result.insideRange
-      ? "Inside the range! 🎯"
-      : `${Math.round(result.distKm).toLocaleString()} km from the range`;
-    document.getElementById("res-loc-label").className = "res-detail " + locLabel.cls;
+/* ─── History calendar ─────────────────────────────────────────────────────── */
+.cal-month       { margin-bottom: 20px; }
+.cal-month-name  {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--forest);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.cal-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.cal-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 52px;
+  padding: 6px 4px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: var(--parchment);
+  cursor: default;
+}
+.cal-day.great { background: #d4f0d4; border-color: #88cc88; }
+.cal-day.ok    { background: #fff4cc; border-color: #ccaa44; }
+.cal-day.low   { background: #fde8e8; border-color: #cc8888; }
+.cal-emoji   { font-size: 1.2rem; line-height: 1; }
+.cal-day-num { font-size: 0.7rem; color: var(--ink-lite); }
+.cal-score   { font-size: 0.72rem; font-weight: 700; color: var(--ink-mid); }
+.empty-history { font-size: 0.88rem; color: var(--ink-lite); text-align: center; padding: 24px 0; }
 
-    const statusLine = document.getElementById("res-status-label");
-    if (stepsOff === 0) {
-      statusLine.textContent = "Exact conservation status! 🎯";
-      statusLine.className = "res-detail perfect";
-    } else {
-      statusLine.textContent = `${stepsOff} step${stepsOff>1?"s":""} off — correct: ${correctMeta.label}`;
-      statusLine.className = "res-detail " + (stepsOff === 1 ? "hot" : stepsOff === 2 ? "warm" : "cold");
-    }
+/* ─── Donate modal ─────────────────────────────────────────────────────────── */
+.donate-hero { text-align: center; margin-bottom: 20px; }
+.donate-tagline { font-size: 1rem; font-weight: 700; color: var(--forest); margin-bottom: 6px; }
+.donate-sub     { font-size: 0.86rem; color: var(--ink-mid); line-height: 1.5; }
 
-    document.getElementById("res-fact").textContent   = `🔬 ${a.fact}`;
-    document.getElementById("res-region").textContent = `Native range: ${a.region}`;
+.donate-split {
+  display: flex;
+  gap: 0;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.donate-split-item {
+  flex: 1;
+  padding: 16px 12px;
+  text-align: center;
+  background: var(--parchment);
+}
+.donate-split-divider { width: 1.5px; background: var(--border); flex-shrink: 0; }
+.donate-split-pct {
+  display: block;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--forest);
+  margin-bottom: 4px;
+}
+.donate-split-pct--green { color: #2a8a2a; }
+.donate-split-label {
+  font-size: 0.78rem;
+  color: var(--ink-mid);
+  line-height: 1.4;
+}
 
-    // Reveal large photo after guessing
-    const imgWrap  = document.getElementById("res-image-wrap");
-    const resImg   = document.getElementById("res-image");
-    const resCredit= document.getElementById("res-image-credit");
-    if (a.image) {
-      resImg.src = a.image;
-      resImg.alt = a.name;
-      const licenseShort = a.imageLicense
-        ? a.imageLicense.replace("https://creativecommons.org/licenses/","CC ").replace("https://creativecommons.org/publicdomain/","CC ").replace(/\/[\d.]+\/$/,"").toUpperCase()
-        : "";
-      resCredit.textContent = [a.imageCredit, licenseShort].filter(Boolean).join(" · ");
-      imgWrap.style.display = "block";
-      resImg.onerror = () => { imgWrap.style.display = "none"; };
-    } else {
-      imgWrap.style.display = "none";
-    }
+.donate-actions { text-align: center; }
+.donate-btn {
+  display: inline-block;
+  background: var(--forest);
+  color: #fff;
+  padding: 12px 28px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.15s;
+  margin-bottom: 8px;
+}
+.donate-btn:hover { background: var(--forest-mid); text-decoration: none; color: #fff; }
+.donate-note { font-size: 0.74rem; color: var(--ink-lite); }
 
-    // Score ring color
-    const pct = result.total / MAX_TOTAL;
-    const ringColor = pct >= 0.8 ? "#4a9e4a" : pct >= 0.5 ? "#e8a020" : "#c0392b";
-    document.getElementById("res-ring").style.stroke = ringColor;
-    const circumference = 2 * Math.PI * 28;
-    document.getElementById("res-ring").style.strokeDashoffset =
-      circumference * (1 - pct);
+/* ─── Footer ───────────────────────────────────────────────────────────────── */
+footer {
+  background: var(--forest);
+  color: rgba(255,255,255,0.55);
+  font-size: 0.73rem;
+  text-align: center;
+  padding: 14px 16px;
+  margin-top: auto;
+  line-height: 1.6;
+}
+footer a { color: var(--sage); }
+footer a:hover { color: #fff; }
 
-    document.getElementById("result-panel").style.display  = "block";
-    // Reveal the correct status badge now that the guess is in
-    const badge = document.getElementById("status-badge");
-    const correctMeta2 = STATUS_META[a.status] || STATUS_META["LC"];
-    badge.textContent      = correctMeta2.label;
-    badge.style.background = correctMeta2.bg;
-    badge.style.color      = correctMeta2.color;
-    badge.style.display    = "inline-block";
-    document.getElementById("share-btn").style.display     = "inline-flex";
-    if (GameState.mode === "freeplay") {
-      document.getElementById("freeplay-next").style.display = "inline-flex";
-      document.getElementById("freeplay-score-display").textContent =
-        `Session total: ${GameState.freeplayScore} pts`;
-    }
+/* ─── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  header { height: auto; padding: 10px 12px; gap: 8px; }
+  .logo-sub { display: none; }
+  nav { gap: 3px; }
+  .nav-btn { padding: 5px 8px; font-size: 0.78rem; }
+  .animal-card { gap: 10px; padding: 10px; }
+  .animal-thumb { width: 72px; height: 72px; }
+  .animal-name { font-size: 1.05rem; }
+  .result-header { gap: 12px; }
+  .modal { max-height: 90vh; }
+  .status-option { font-size: 0.76rem; padding: 5px 9px; }
+}
 
-    GameState.submitted = true;
-    document.getElementById("submit-btn").disabled = true;
-    document.getElementById("map-instruction").textContent =
-      alreadyPlayed ? "You already played today — range shown above" : "Range revealed above";
-
-    this.renderStreak();
-  },
-
-  // ── History ───────────────────────────────────────────────────────────────
-  renderHistoryCalendar() {
-    const history = loadHistory();
-    const container = document.getElementById("history-content");
-    const dates = Object.keys(history).sort().reverse();
-
-    if (!dates.length) {
-      container.innerHTML = `<p class="empty-history">No games yet — try today's daily!</p>`;
-      return;
-    }
-
-    const byMonth = {};
-    dates.forEach(d => {
-      const key = d.slice(0,7);
-      (byMonth[key] = byMonth[key]||[]).push(d);
-    });
-
-    let html = "";
-    Object.entries(byMonth).sort((a,b)=>b[0].localeCompare(a[0])).forEach(([mk, days]) => {
-      const [y,m] = mk.split("-");
-      const name = new Date(y,m-1,1).toLocaleString("default",{month:"long",year:"numeric"});
-      html += `<div class="cal-month"><h3 class="cal-month-name">${name}</h3><div class="cal-grid">`;
-      days.sort().forEach(dk => {
-        const r = history[dk];
-        const animal = ANIMALS.find(a=>a.id===r.animalId);
-        const emoji  = animal ? animal.emoji : "🐾";
-        const day    = parseInt(dk.split("-")[2]);
-        const pct    = r.total / MAX_TOTAL;
-        const cls    = pct >= 0.8 ? "great" : pct >= 0.5 ? "ok" : "low";
-        html += `<div class="cal-day ${cls}" title="${dk} — ${animal?.name||''}">
-          <span class="cal-emoji">${emoji}</span>
-          <span class="cal-day-num">${day}</span>
-          <span class="cal-score">${r.total}</span>
-        </div>`;
-      });
-      html += `</div></div>`;
-    });
-    container.innerHTML = html;
-  },
-
-  // ── Streak ────────────────────────────────────────────────────────────────
-  renderStreak() {
-    const s = calcStreak();
-    document.getElementById("streak-display").textContent = s > 0 ? `🔥 ${s}` : "";
-  },
-
-  // ── Share ─────────────────────────────────────────────────────────────────
-  async share() {
-    const history = loadHistory();
-    const result  = history[GameState.dateKey] ||
-                    { animalId: GameState.animal.id, locationScore: 0, statusScore: 0, total: 0,
-                      guessLat: GameState.pendingLat||0, guessLng: GameState.pendingLng||0,
-                      guessStatus: GameState.pendingStatus||"LC", insideRange: false, distKm: 9999 };
-    const text = buildShareText(result);
-    if (navigator.share) { try { await navigator.share({ text }); return; } catch {} }
-    await navigator.clipboard.writeText(text).catch(()=>{});
-    const btn = document.getElementById("share-btn");
-    const orig = btn.textContent;
-    btn.textContent = "Copied! ✓";
-    setTimeout(() => btn.textContent = orig, 2000);
-  },
-
-  // ── Modal ─────────────────────────────────────────────────────────────────
-  openModal(type) {
-    document.getElementById("modal-overlay").style.display = "flex";
-    document.getElementById("modal-history").style.display = type==="history" ? "block" : "none";
-    document.getElementById("modal-how").style.display     = type==="how"     ? "block" : "none";
-    document.getElementById("modal-donate").style.display  = type==="donate"  ? "block" : "none";
-    if (type === "history") this.renderHistoryCalendar();
-  },
-
-  closeModal() {
-    document.getElementById("modal-overlay").style.display = "none";
-  },
-};
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
