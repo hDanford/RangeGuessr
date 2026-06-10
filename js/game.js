@@ -19,6 +19,12 @@ function hashStr(s) {
 }
 
 function getDailyAnimal(dateKey) {
+  // Use schedule if available for this date
+  if (typeof SCHEDULE !== "undefined" && SCHEDULE[dateKey]) {
+    const a = ANIMALS.find(a => a.id === SCHEDULE[dateKey]);
+    if (a) return a;
+  }
+  // Fallback: hash-based selection
   return ANIMALS[hashStr(dateKey) % ANIMALS.length];
 }
 
