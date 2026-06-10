@@ -242,6 +242,8 @@ const UI = {
     document.getElementById("result-panel").style.display  = "none";
     document.getElementById("share-btn").style.display     = "none";
     document.getElementById("freeplay-next").style.display = "none";
+    document.getElementById("res-fact").textContent        = "";
+    document.getElementById("res-region").textContent      = "";
 
     this.renderStreak();
   },
@@ -256,8 +258,8 @@ const UI = {
       }).join(" ");
       const polygon = document.createElementNS("http://www.w3.org/2000/svg","polygon");
       polygon.setAttribute("points", pts);
-      polygon.setAttribute("fill","rgba(160,100,220,0.25)");
-      polygon.setAttribute("stroke","#a855f7");
+      polygon.setAttribute("fill","rgba(255,215,0,0.22)");
+      polygon.setAttribute("stroke","#FFD700");
       polygon.setAttribute("stroke-width","1.8");
       this.rangeGroupEl.appendChild(polygon);
     });
@@ -291,7 +293,7 @@ const UI = {
     const line = document.createElementNS("http://www.w3.org/2000/svg","line");
     line.setAttribute("x1",g1.x); line.setAttribute("y1",g1.y);
     line.setAttribute("x2",g2.x); line.setAttribute("y2",g2.y);
-    line.setAttribute("stroke","#a464dc");
+    line.setAttribute("stroke","#FFD700");
     line.setAttribute("stroke-width","1.5");
     line.setAttribute("stroke-dasharray","4 3");
     line.setAttribute("opacity","0.9");
