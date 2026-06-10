@@ -190,14 +190,20 @@ const UI = {
     // Thumbnail — show image if available, else show a link to view it
     const imgEl      = document.getElementById("animal-img");
     const fallbackEl = document.getElementById("animal-img-fallback");
+    const creditEl   = document.getElementById("animal-img-credit");
     imgEl.style.display      = "none";
     fallbackEl.style.display = "none";
+    creditEl.style.display   = "none";
     if (a.image) {
       imgEl.src = a.image;
       imgEl.alt = a.name;
       imgEl.onload = () => {
-        imgEl.style.display      = "block";
+        imgEl.style.display    = "block";
         fallbackEl.style.display = "none";
+        if (a.imageCredit || a.imageLicense) {
+          creditEl.textContent = [a.imageCredit, a.imageLicense].filter(Boolean).join(" · ");
+          creditEl.style.display = "block";
+        }
       };
       imgEl.onerror = () => {
         imgEl.style.display      = "none";
@@ -236,7 +242,6 @@ const UI = {
     document.getElementById("result-panel").style.display  = "none";
     document.getElementById("share-btn").style.display     = "none";
     document.getElementById("freeplay-next").style.display = "none";
-    document.getElementById("res-image-wrap").style.display = "none";
 
     this.renderStreak();
   },
