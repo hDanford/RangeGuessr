@@ -62,7 +62,9 @@ header {
   align-items: center;
   gap: 12px;
   padding: 0 16px;
-  height: 56px;
+  min-height: 56px;
+  height: auto;
+  padding: 8px 16px;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -294,6 +296,7 @@ nav {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
+  align-items: flex-start;
   gap: 5px;
 }
 .status-group--extinct .status-option {
@@ -312,6 +315,7 @@ nav {
 }
 
 .status-option {
+  flex-shrink: 0;
   background: var(--parchment);
   border: 1.5px solid var(--border);
   border-radius: 6px;
