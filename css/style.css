@@ -1,191 +1,469 @@
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+// ─── Map projection helpers ───────────────────────────────────────────────────
+// Equirectangular: viewBox 0 0 900 460
+const MAP_W = 900, MAP_H = 460;
 
-:root {
-  --green-dark:   #1a3a1a;
-  --green-mid:    #2d5a2d;
-  --green-accent: #4a9e4a;
-  --green-light:  #8dc88d;
-  --green-pale:   #e8f5e8;
-  --ocean:        #a8d8ea;
-  --sand:         #f5f0e8;
-  --text-primary: #1c2b1c;
-  --text-muted:   #5a7a5a;
-  --text-light:   #8aaa8a;
-  --border:       rgba(45,90,45,0.15);
-  --border-mid:   rgba(45,90,45,0.3);
-  --white:        #ffffff;
-  --radius-sm:    6px;
-  --radius-md:    10px;
-  --radius-lg:    16px;
-  --shadow-sm:    0 1px 4px rgba(0,0,0,0.07);
-  --shadow-md:    0 4px 16px rgba(0,0,0,0.12);
+function latLngToXY(lat, lng) {
+  const x = (lng + 180) / 360 * MAP_W;
+  const y = (90 - lat) / 180 * MAP_H;
+  return { x, y };
 }
 
-html{font-size:16px}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--sand);color:var(--text-primary);min-height:100vh;line-height:1.5}
-
-/* ── Ad slots ── */
-.ad-slot{width:100%;background:#ede9e2;display:flex;align-items:center;justify-content:center;min-height:90px;padding:8px;border-bottom:1px solid var(--border)}
-.ad-slot.bottom{border-top:1px solid var(--border);border-bottom:none;margin-top:1.5rem}
-.ad-label{font-size:10px;color:var(--text-light);text-transform:uppercase;letter-spacing:.06em}
-
-/* ── Header ── */
-header{background:var(--green-dark);color:white;padding:.6rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:.75rem;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,.3)}
-.logo{display:flex;align-items:center;gap:8px;text-decoration:none;color:white;flex-shrink:0}
-.logo-icon{font-size:20px;line-height:1}
-.logo-text{font-size:17px;font-weight:600;letter-spacing:-.02em}
-.logo-sub{font-size:10px;opacity:.6;letter-spacing:.05em;text-transform:uppercase;display:block;line-height:1}
-nav{display:flex;gap:3px;flex-wrap:wrap}
-.nav-btn{background:transparent;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.75);border-radius:var(--radius-sm);padding:4px 11px;font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap}
-.nav-btn:hover{background:rgba(255,255,255,.1);color:white}
-.nav-btn.active{background:var(--green-accent);border-color:var(--green-accent);color:white}
-.streak-badge{font-size:13px;color:#ffd700;font-weight:600;min-width:40px;text-align:right}
-
-/* ── Layout ── */
-.main-wrap{max-width:860px;margin:0 auto;padding:.75rem .75rem 2rem}
-.mode-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);text-align:center;margin-bottom:.6rem}
-
-/* ── Animal card ── */
-.animal-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.9rem 1.1rem;display:flex;flex-direction:column;gap:.75rem;margin-bottom:.6rem;box-shadow:var(--shadow-sm)}
-.animal-thumb{width:100%;height:256px;border-radius:var(--radius-md);overflow:hidden;background:var(--green-pale);display:flex;align-items:center;justify-content:center;border:1px solid var(--border);position:relative}
-.animal-img{width:100%;height:100%;object-fit:cover;display:none}
-.animal-img-fallback{font-size:13px;font-weight:500;color:var(--green-accent);text-decoration:underline;padding:8px;display:none}
-.animal-info{flex:1;min-width:0}
-.animal-name{font-size:19px;font-weight:600;margin-bottom:1px}
-.animal-sci{font-size:12px;color:var(--text-light);font-style:italic;margin-bottom:3px}
-.animal-hint{font-size:13px;color:var(--text-muted);line-height:1.4}
-.status-badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;margin-top:5px;display:inline-block}
-
-/* ── Map ── */
-.map-wrap{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:.6rem;box-shadow:var(--shadow-sm);cursor:crosshair;position:relative}
-#world-svg{width:100%;height:auto;display:block}
-.country{fill:#4a7a4a;stroke:#f5f0e8;stroke-width:.5;pointer-events:none}
-.map-instruction{text-align:center;font-size:12px;color:var(--text-muted);padding:4px 0 6px;min-height:24px;transition:color .2s}
-.map-instruction.flash{color:#c0392b;font-weight:500}
-
-/* ── Status picker ── */
-.status-picker-wrap{margin-bottom:.6rem}
-.picker-label{font-size:12px;color:var(--text-muted);margin-bottom:6px;text-align:center}
-.status-picker{display:flex;flex-direction:column;align-items:center;gap:6px}
-.status-group{display:flex;gap:5px;justify-content:center;flex-wrap:wrap}
-.status-group--extinct{padding-bottom:6px;border-bottom:1px solid var(--border-mid);width:100%;justify-content:center}
-.status-option{background:var(--white);border:1.5px solid var(--border-mid);border-radius:20px;padding:5px 13px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
-.status-option:hover{border-color:var(--green-accent);background:var(--green-pale)}
-.status-option.selected{border-color:var(--green-accent);background:var(--green-accent);color:white}
-.status-option[data-status="EX"]{border-color:#888;color:#555}.status-option[data-status="EX"]:hover{border-color:#555;background:#f0f0f0;color:#333}.status-option[data-status="EX"].selected{background:#444;border-color:#444;color:white}
-.status-option[data-status="EW"]{border-color:#8a70b8;color:#4a3060}.status-option[data-status="EW"]:hover{border-color:#6b57a8;background:#EDE8F5;color:#4a3060}.status-option[data-status="EW"].selected{background:#6b57a8;border-color:#6b57a8;color:white}
-.status-option[data-status="CR"]{border-color:#c0392b}.status-option[data-status="CR"].selected{background:#c0392b;border-color:#c0392b;color:white}
-.status-option[data-status="EN"]{border-color:#d35400}.status-option[data-status="EN"].selected{background:#d35400;border-color:#d35400;color:white}
-.status-option[data-status="VU"]{border-color:#e67e22}.status-option[data-status="VU"].selected{background:#e67e22;border-color:#e67e22;color:white}
-.status-option[data-status="NT"]{border-color:#27ae60}.status-option[data-status="NT"].selected{background:#27ae60;border-color:#27ae60;color:white}
-.status-option[data-status="LC"]{border-color:#1abc9c}.status-option[data-status="LC"].selected{background:#1abc9c;border-color:#1abc9c;color:white}
-
-/* ── Submit button ── */
-.submit-wrap{text-align:center;margin-bottom:.75rem}
-#submit-btn{background:#ccc;color:white;border:none;border-radius:var(--radius-md);padding:10px 32px;font-size:15px;font-weight:600;cursor:not-allowed;transition:all .2s;min-width:180px}
-#submit-btn.ready{background:var(--green-mid);cursor:pointer}
-#submit-btn.ready:hover{background:var(--green-dark)}
-#submit-btn:disabled{opacity:.6}
-
-/* ── Result panel ── */
-.result-panel{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.1rem 1.25rem;box-shadow:var(--shadow-sm);margin-bottom:.75rem;display:none}
-.result-header{display:flex;align-items:center;gap:1rem;margin-bottom:.85rem}
-.score-ring-wrap{flex-shrink:0;position:relative;width:68px;height:68px}
-.score-ring-wrap svg{position:absolute;inset:0;transform:rotate(-90deg)}
-#res-ring{fill:none;stroke-width:5;stroke-linecap:round;stroke-dasharray:175.9;stroke-dashoffset:175.9;transition:stroke-dashoffset .6s ease,stroke .4s}
-.ring-bg{fill:none;stroke:#e0e8e0;stroke-width:5}
-.score-ring-total{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--text-primary);line-height:1.1;text-align:center}
-.score-ring-label{font-size:9px;color:var(--text-muted);display:block}
-.score-breakdown{flex:1}
-.score-row-item{display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border)}
-.score-row-item:last-child{border-bottom:none}
-.score-row-item .label{font-size:13px;color:var(--text-muted)}
-.score-row-item .pts{font-size:15px;font-weight:700;color:var(--text-primary)}
-.res-detail{font-size:12px;margin-top:2px;display:block}
-.res-detail.perfect{color:#1a7a1a;font-weight:600}
-.res-detail.hot    {color:#2e7d32}
-.res-detail.warm   {color:#e67e22}
-.res-detail.cold   {color:#e74c3c}
-.res-detail.miss   {color:#c0392b}
-.res-fact{font-size:13px;color:var(--text-muted);background:var(--green-pale);border-left:3px solid var(--green-accent);border-radius:0 var(--radius-sm) var(--radius-sm) 0;padding:8px 12px;line-height:1.5;margin:.75rem 0 .4rem}
-.res-region{font-size:12px;color:var(--text-light);margin-bottom:.75rem}
-.res-image-wrap{margin:.5rem 0 .75rem;border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--border);position:relative}
-.res-image{width:100%;max-height:260px;object-fit:cover;display:block}
-.res-image-credit{font-size:10px;color:var(--text-light);padding:4px 8px;background:rgba(0,0,0,0.04);text-align:right}
-.result-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
-.share-btn{background:var(--green-mid);color:white;border:none;border-radius:var(--radius-md);padding:7px 18px;font-size:13px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:background .15s}
-.share-btn:hover{background:var(--green-dark)}
-.freeplay-next-btn{background:var(--green-accent);color:white;border:none;border-radius:var(--radius-md);padding:7px 18px;font-size:13px;font-weight:500;cursor:pointer;display:none;align-items:center;gap:5px;transition:background .15s}
-.freeplay-next-btn:hover{background:var(--green-mid)}
-
-/* ── Free play controls ── */
-.freeplay-controls{display:none;justify-content:center;align-items:center;gap:10px;margin-bottom:.6rem}
-.freeplay-score{font-size:13px;color:var(--text-muted)}
-
-/* ── Modal ── */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;padding:1rem}
-.modal{background:var(--white);border-radius:var(--radius-lg);max-width:540px;width:100%;max-height:82vh;overflow-y:auto;box-shadow:var(--shadow-md)}
-.modal-header{display:flex;align-items:center;justify-content:space-between;padding:.9rem 1.1rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--white);z-index:1}
-.modal-title{font-size:16px;font-weight:600}
-.modal-close{background:none;border:none;font-size:18px;cursor:pointer;color:var(--text-muted);padding:2px 6px;border-radius:var(--radius-sm);line-height:1}
-.modal-close:hover{background:var(--green-pale)}
-.modal-body{padding:1.1rem}
-
-/* ── History calendar ── */
-.cal-month{margin-bottom:1.25rem}
-.cal-month-name{font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.06em}
-.cal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:7px}
-.cal-day{border-radius:var(--radius-md);padding:7px 4px;text-align:center;border:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:2px}
-.cal-day.great{background:#e8f8e8;border-color:rgba(74,158,74,.3)}
-.cal-day.ok   {background:#fff8e8;border-color:rgba(230,126,34,.3)}
-.cal-day.low  {background:#fff0f0;border-color:rgba(192,57,43,.2)}
-.cal-emoji{font-size:18px}
-.cal-day-num{font-size:10px;font-weight:600;color:var(--text-muted)}
-.cal-score{font-size:12px;font-weight:700;color:var(--text-primary)}
-.empty-history{color:var(--text-muted);font-size:14px;text-align:center;padding:2rem 0}
-
-/* ── How to play ── */
-.how-section{margin-bottom:1.1rem}
-.how-section h3{font-size:13px;font-weight:700;color:var(--green-mid);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
-.how-section p,.how-section li{font-size:13px;color:var(--text-muted);line-height:1.6}
-.how-section ul{padding-left:1.1rem}
-.how-section li{margin-bottom:3px}
-.status-legend{display:flex;flex-direction:column;gap:5px;margin-top:6px}
-.legend-row{display:flex;align-items:center;gap:8px}
-.legend-badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;white-space:nowrap}
-.legend-desc{font-size:12px;color:var(--text-muted)}
-
-/* ── Footer ── */
-footer{text-align:center;font-size:11px;color:var(--text-light);padding:.9rem;border-top:1px solid var(--border);margin-top:1.5rem}
-footer a{color:var(--green-accent);text-decoration:none}
-
-/* ── Donate nav button ── */
-.nav-btn--donate{border-color:rgba(255,160,80,.4);color:rgba(255,200,140,.9)}
-.nav-btn--donate:hover{background:rgba(255,140,50,.15);color:#ffb366;border-color:rgba(255,140,50,.6)}
-
-/* ── Donate modal ── */
-.donate-hero{text-align:center;padding:.5rem 0 1.25rem}
-.donate-tagline{font-size:15px;font-weight:600;color:var(--text-primary);margin-bottom:.4rem}
-.donate-sub{font-size:13px;color:var(--text-muted);line-height:1.5}
-.donate-split{display:flex;flex-direction:column;gap:0;border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;margin-bottom:1.25rem}
-.donate-split-item{display:flex;align-items:center;gap:.85rem;padding:.85rem 1rem;background:var(--white)}
-.donate-split-divider{height:1px;background:var(--border)}
-.donate-split-pct{font-size:22px;font-weight:700;color:var(--text-muted);min-width:52px;text-align:center;flex-shrink:0}
-.donate-split-pct--green{color:var(--green-accent)}
-.donate-split-label{font-size:13px;color:var(--text-muted);line-height:1.4}
-.donate-actions{text-align:center}
-.donate-btn{display:inline-block;background:var(--green-mid);color:white;text-decoration:none;border-radius:var(--radius-md);padding:11px 28px;font-size:15px;font-weight:600;transition:background .15s;letter-spacing:.01em}
-.donate-btn:hover{background:var(--green-dark)}
-.donate-note{font-size:11px;color:var(--text-light);margin-top:.6rem}
-
-/* ── Responsive ── */
-@media(max-width:600px){
-  header{flex-wrap:wrap;padding:.5rem .75rem}
-  .logo-sub{display:none}
-  .nav-btn{padding:4px 8px;font-size:11px}
-  .animal-name{font-size:17px}
-  .animal-thumb{height:180px}
-  .status-option{padding:4px 9px;font-size:11px}
-  .cal-grid{grid-template-columns:repeat(auto-fill,minmax(50px,1fr))}
-  .status-group--extinct .status-option{font-size:10px;padding:4px 8px}
+function xyToLatLng(x, y) {
+  const lng = (x / MAP_W) * 360 - 180;
+  const lat = 90 - (y / MAP_H) * 180;
+  return { lat, lng };
 }
+
+// ─── UI ───────────────────────────────────────────────────────────────────────
+const UI = {
+  svgEl: null,
+  markerEl: null,
+  rangeGroupEl: null,
+  resultMarkerEl: null,
+
+  init() {
+    this.svgEl = document.getElementById("world-svg");
+    this.buildMapBase();
+    this.bindNav();
+    this.bindStatusPicker();
+    this.bindSubmit();
+    this.renderStreak();
+  },
+
+  // ── Map construction ──────────────────────────────────────────────────────
+  buildMapBase() {
+    // Ocean bg
+    const ocean = document.createElementNS("http://www.w3.org/2000/svg","rect");
+    ocean.setAttribute("width","900"); ocean.setAttribute("height","460");
+    ocean.setAttribute("fill","#a8d8ea");
+    this.svgEl.appendChild(ocean);
+
+    // Country fills from countries.js (Natural Earth data)
+    Object.entries(COUNTRY_PATHS).forEach(([iso, entry]) => {
+      const path = document.createElementNS("http://www.w3.org/2000/svg","path");
+      path.setAttribute("d", entry.d);
+      path.setAttribute("class","country");
+      path.dataset.iso  = iso;
+      path.dataset.name = entry.name;
+      // Tooltip on hover
+      const title = document.createElementNS("http://www.w3.org/2000/svg","title");
+      title.textContent = entry.name;
+      path.appendChild(title);
+      this.svgEl.appendChild(path);
+    });
+
+    // Range highlight group (drawn above countries, below marker)
+    this.rangeGroupEl = document.createElementNS("http://www.w3.org/2000/svg","g");
+    this.rangeGroupEl.setAttribute("id","range-group");
+    this.svgEl.appendChild(this.rangeGroupEl);
+
+    // Guess marker
+    this.markerEl = document.createElementNS("http://www.w3.org/2000/svg","g");
+    this.markerEl.setAttribute("id","guess-marker");
+    this.markerEl.style.display = "none";
+    this.markerEl.innerHTML = `
+      <circle r="10" fill="none" stroke="#ff6b35" stroke-width="2.5" opacity="0.9"/>
+      <circle r="3"  fill="#ff6b35"/>
+    `;
+    this.svgEl.appendChild(this.markerEl);
+
+    // Click handler
+    this.svgEl.addEventListener("click", e => this.handleMapClick(e));
+  },
+
+  handleMapClick(e) {
+    if (GameState.submitted) return;
+    const rect = this.svgEl.getBoundingClientRect();
+    const scaleX = MAP_W / rect.width;
+    const scaleY = MAP_H / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top)  * scaleY;
+    const { lat, lng } = xyToLatLng(x, y);
+
+    GameState.pendingLat = lat;
+    GameState.pendingLng = lng;
+
+    // Move marker
+    this.markerEl.style.display = "";
+    this.markerEl.setAttribute("transform", `translate(${x},${y})`);
+
+    // Show country name if clicked on one
+    const target = e.target.closest(".country");
+    const countryName = target ? target.dataset.name : null;
+    const locText = countryName
+      ? `📍 ${countryName} (${lat.toFixed(1)}°, ${lng.toFixed(1)}°)`
+      : `📍 ${lat.toFixed(1)}°, ${lng.toFixed(1)}°`;
+
+    this.updateSubmitBtn();
+    document.getElementById("map-instruction").textContent = locText;
+  },
+
+  // ── Status picker ─────────────────────────────────────────────────────────
+  bindStatusPicker() {
+    document.querySelectorAll(".status-option").forEach(btn => {
+      btn.addEventListener("click", () => {
+        if (GameState.submitted) return;
+        document.querySelectorAll(".status-option").forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+        GameState.pendingStatus = btn.dataset.status;
+        this.updateSubmitBtn();
+      });
+    });
+  },
+
+  // ── Submit ────────────────────────────────────────────────────────────────
+  bindSubmit() {
+    document.getElementById("submit-btn").addEventListener("click", () => {
+      if (GameState.pendingLat === null) {
+        this.flashInstruction("Click the map first to place your guess!"); return;
+      }
+      if (!GameState.pendingStatus) {
+        this.flashInstruction("Pick a conservation status first!"); return;
+      }
+      const result = submitGuess();
+      if (result) this.showResult(result);
+    });
+  },
+
+  updateSubmitBtn() {
+    const ready = GameState.pendingLat !== null && GameState.pendingStatus !== null;
+    const btn = document.getElementById("submit-btn");
+    btn.disabled = !ready || GameState.submitted;
+    btn.classList.toggle("ready", ready && !GameState.submitted);
+  },
+
+  flashInstruction(msg) {
+    const el = document.getElementById("map-instruction");
+    el.textContent = msg;
+    el.classList.add("flash");
+    setTimeout(() => el.classList.remove("flash"), 1200);
+  },
+
+  // ── Nav ───────────────────────────────────────────────────────────────────
+  bindNav() {
+    document.getElementById("btn-daily").addEventListener("click",    () => this.showDaily());
+    document.getElementById("btn-freeplay").addEventListener("click", () => this.showFreeplay());
+    document.getElementById("btn-history").addEventListener("click",  () => this.openModal("history"));
+    document.getElementById("btn-how").addEventListener("click",      () => this.openModal("how"));
+    document.getElementById("btn-donate").addEventListener("click",   () => this.openModal("donate"));
+    document.getElementById("modal-close").addEventListener("click",  () => this.closeModal());
+    document.getElementById("modal-overlay").addEventListener("click", e => {
+      if (e.target.id === "modal-overlay") this.closeModal();
+    });
+    document.getElementById("freeplay-next").addEventListener("click", () => {
+      nextFreeplayAnimal();
+      this.renderGame();
+    });
+    document.getElementById("share-btn").addEventListener("click", () => this.share());
+  },
+
+  setActiveNav(id) {
+    document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+  },
+
+  // ── Screens ───────────────────────────────────────────────────────────────
+  showDaily() {
+    this.setActiveNav("btn-daily");
+    document.getElementById("freeplay-controls").style.display = "none";
+    const init = startDaily();
+    this.renderGame();
+    if (init.alreadyPlayed) this.showResult(init.result, true);
+  },
+
+  showFreeplay() {
+    this.setActiveNav("btn-freeplay");
+    startFreeplay();
+    document.getElementById("freeplay-controls").style.display = "flex";
+    this.renderGame();
+  },
+
+  // ── Game render ───────────────────────────────────────────────────────────
+  renderGame() {
+    const a = GameState.animal;
+    const meta = STATUS_META[a.status] || STATUS_META["LC"];
+
+    document.getElementById("animal-name").textContent   = a.name;
+    document.getElementById("animal-sci").textContent    = a.scientificName || "";
+    document.getElementById("animal-hint").textContent   = a.hint;
+
+    // Thumbnail — show image if available, else show a link to view it
+    const imgEl      = document.getElementById("animal-img");
+    const fallbackEl = document.getElementById("animal-img-fallback");
+    const creditEl   = document.getElementById("animal-img-credit");
+    imgEl.style.display      = "none";
+    fallbackEl.style.display = "none";
+    creditEl.style.display   = "none";
+    if (a.image) {
+      imgEl.src = a.image;
+      imgEl.alt = a.name;
+      imgEl.onload = () => {
+        imgEl.style.display    = "block";
+        fallbackEl.style.display = "none";
+        if (a.imageCredit || a.imageLicense) {
+          creditEl.textContent = [a.imageCredit, a.imageLicense].filter(Boolean).join(" · ");
+          creditEl.style.display = "block";
+        }
+      };
+      imgEl.onerror = () => {
+        imgEl.style.display      = "none";
+        fallbackEl.href          = a.image;
+        fallbackEl.textContent   = `View ${a.name} photo →`;
+        fallbackEl.style.display = "block";
+      };
+    } else {
+      fallbackEl.style.display = "none";
+    }
+
+    const badge = document.getElementById("status-badge");
+    badge.textContent      = meta.label;
+    badge.style.background = meta.bg;
+    badge.style.color      = meta.color;
+    badge.style.display    = "none"; // revealed after guessing
+
+    if (GameState.mode === "daily") {
+      document.getElementById("mode-label").textContent = `Daily — ${getTodayKey()}`;
+    } else {
+      document.getElementById("mode-label").textContent =
+        `Free Play · Round ${GameState.freeplayRound} · Session: ${GameState.freeplayScore} pts`;
+    }
+
+    // Reset map
+    this.clearRange();
+    this.markerEl.style.display = "none";
+    GameState.pendingLat = GameState.pendingLng = GameState.pendingStatus = null;
+
+    // Reset status picker
+    document.querySelectorAll(".status-option").forEach(b => b.classList.remove("selected"));
+
+    // Reset submit + result
+    this.updateSubmitBtn();
+    document.getElementById("map-instruction").textContent = "Click the map to place your guess";
+    document.getElementById("result-panel").style.display  = "none";
+    document.getElementById("share-btn").style.display     = "none";
+    document.getElementById("freeplay-next").style.display = "none";
+
+    this.renderStreak();
+  },
+
+  // ── Range polygon overlay ─────────────────────────────────────────────────
+  drawRange(rangePolygons) {
+    this.clearRange();
+    rangePolygons.forEach(poly => {
+      const pts = poly.map(p => {
+        const {x,y} = latLngToXY(p.lat, p.lng);
+        return `${x},${y}`;
+      }).join(" ");
+      const polygon = document.createElementNS("http://www.w3.org/2000/svg","polygon");
+      polygon.setAttribute("points", pts);
+      polygon.setAttribute("fill","rgba(255,215,0,0.22)");
+      polygon.setAttribute("stroke","#FFD700");
+      polygon.setAttribute("stroke-width","1.8");
+      this.rangeGroupEl.appendChild(polygon);
+    });
+  },
+
+  clearRange() {
+    while (this.rangeGroupEl && this.rangeGroupEl.firstChild) {
+      this.rangeGroupEl.removeChild(this.rangeGroupEl.firstChild);
+    }
+  },
+
+  // Draw a line from guess point to nearest range edge (if outside)
+  drawDistanceLine(guessLat, guessLng, rangePolygons, insideAny) {
+    if (insideAny) return;
+    // Find closest point on any polygon edge
+    let minDist = Infinity, closestLat = 0, closestLng = 0;
+    for (const poly of rangePolygons) {
+      for (let i = 0; i < poly.length; i++) {
+        const a = poly[i], b = poly[(i+1)%poly.length];
+        const dx = b.lng-a.lng, dy = b.lat-a.lat;
+        const lenSq = dx*dx+dy*dy;
+        let t = lenSq > 0 ? ((guessLng-a.lng)*dx+(guessLat-a.lat)*dy)/lenSq : 0;
+        t = Math.max(0,Math.min(1,t));
+        const cLat = a.lat+t*dy, cLng = a.lng+t*dx;
+        const d = haversineKm(guessLat,guessLng,cLat,cLng);
+        if (d < minDist) { minDist=d; closestLat=cLat; closestLng=cLng; }
+      }
+    }
+    const g1 = latLngToXY(guessLat, guessLng);
+    const g2 = latLngToXY(closestLat, closestLng);
+    const line = document.createElementNS("http://www.w3.org/2000/svg","line");
+    line.setAttribute("x1",g1.x); line.setAttribute("y1",g1.y);
+    line.setAttribute("x2",g2.x); line.setAttribute("y2",g2.y);
+    line.setAttribute("stroke","#FFD700");
+    line.setAttribute("stroke-width","1.5");
+    line.setAttribute("stroke-dasharray","4 3");
+    line.setAttribute("opacity","0.9");
+    this.rangeGroupEl.appendChild(line);
+  },
+
+  // ── Result ────────────────────────────────────────────────────────────────
+  showResult(result, alreadyPlayed = false) {
+    const a = ANIMALS.find(x => x.id === result.animalId) || GameState.animal;
+    const locLabel = locationLabel(result.distKm, result.insideRange);
+    const correctMeta = STATUS_META[a.status];
+    const guessMeta   = STATUS_META[result.guessStatus] || {};
+    const stepsOff    = Math.abs(STATUS_ORDER.indexOf(result.guessStatus) - STATUS_ORDER.indexOf(a.status));
+
+    // Draw range + distance line
+    this.drawRange(a.rangePolygons);
+    if (!result.insideRange) {
+      this.drawDistanceLine(result.guessLat, result.guessLng, a.rangePolygons, false);
+    }
+
+    // Move marker to guess location
+    const {x,y} = latLngToXY(result.guessLat, result.guessLng);
+    this.markerEl.setAttribute("transform", `translate(${x},${y})`);
+    this.markerEl.style.display = "";
+
+    // Highlight guessed status in picker
+    document.querySelectorAll(".status-option").forEach(b => {
+      b.classList.remove("selected");
+      if (b.dataset.status === result.guessStatus) b.classList.add("selected");
+    });
+
+    // Populate result panel
+    document.getElementById("res-location-score").textContent = result.locationScore;
+    document.getElementById("res-status-score").textContent   = result.statusScore;
+    document.getElementById("res-total").textContent          = result.total;
+    document.getElementById("res-loc-label").textContent      = result.insideRange
+      ? "Inside the range! 🎯"
+      : `${Math.round(result.distKm).toLocaleString()} km from the range`;
+    document.getElementById("res-loc-label").className = "res-detail " + locLabel.cls;
+
+    const statusLine = document.getElementById("res-status-label");
+    if (stepsOff === 0) {
+      statusLine.textContent = "Exact conservation status! 🎯";
+      statusLine.className = "res-detail perfect";
+    } else {
+      statusLine.textContent = `${stepsOff} step${stepsOff>1?"s":""} off — correct: ${correctMeta.label}`;
+      statusLine.className = "res-detail " + (stepsOff === 1 ? "hot" : stepsOff === 2 ? "warm" : "cold");
+    }
+
+    document.getElementById("res-fact").textContent   = `🔬 ${a.fact}`;
+    document.getElementById("res-region").textContent = `Native range: ${a.region}`;
+
+    // Reveal large photo after guessing
+    const imgWrap  = document.getElementById("res-image-wrap");
+    const resImg   = document.getElementById("res-image");
+    const resCredit= document.getElementById("res-image-credit");
+    if (a.image) {
+      resImg.src = a.image;
+      resImg.alt = a.name;
+      const licenseShort = a.imageLicense
+        ? a.imageLicense.replace("https://creativecommons.org/licenses/","CC ").replace("https://creativecommons.org/publicdomain/","CC ").replace(/\/[\d.]+\/$/,"").toUpperCase()
+        : "";
+      resCredit.textContent = [a.imageCredit, licenseShort].filter(Boolean).join(" · ");
+      imgWrap.style.display = "block";
+      resImg.onerror = () => { imgWrap.style.display = "none"; };
+    } else {
+      imgWrap.style.display = "none";
+    }
+
+    // Score ring color
+    const pct = result.total / MAX_TOTAL;
+    const ringColor = pct >= 0.8 ? "#4a9e4a" : pct >= 0.5 ? "#e8a020" : "#c0392b";
+    document.getElementById("res-ring").style.stroke = ringColor;
+    const circumference = 2 * Math.PI * 28;
+    document.getElementById("res-ring").style.strokeDashoffset =
+      circumference * (1 - pct);
+
+    document.getElementById("result-panel").style.display  = "block";
+    // Reveal the correct status badge now that the guess is in
+    const badge = document.getElementById("status-badge");
+    const correctMeta2 = STATUS_META[a.status] || STATUS_META["LC"];
+    badge.textContent      = correctMeta2.label;
+    badge.style.background = correctMeta2.bg;
+    badge.style.color      = correctMeta2.color;
+    badge.style.display    = "inline-block";
+    document.getElementById("share-btn").style.display     = "inline-flex";
+    if (GameState.mode === "freeplay") {
+      document.getElementById("freeplay-next").style.display = "inline-flex";
+      document.getElementById("freeplay-score-display").textContent =
+        `Session total: ${GameState.freeplayScore} pts`;
+    }
+
+    GameState.submitted = true;
+    document.getElementById("submit-btn").disabled = true;
+    document.getElementById("map-instruction").textContent =
+      alreadyPlayed ? "You already played today — range shown above" : "Range revealed above";
+
+    this.renderStreak();
+  },
+
+  // ── History ───────────────────────────────────────────────────────────────
+  renderHistoryCalendar() {
+    const history = loadHistory();
+    const container = document.getElementById("history-content");
+    const dates = Object.keys(history).sort().reverse();
+
+    if (!dates.length) {
+      container.innerHTML = `<p class="empty-history">No games yet — try today's daily!</p>`;
+      return;
+    }
+
+    const byMonth = {};
+    dates.forEach(d => {
+      const key = d.slice(0,7);
+      (byMonth[key] = byMonth[key]||[]).push(d);
+    });
+
+    let html = "";
+    Object.entries(byMonth).sort((a,b)=>b[0].localeCompare(a[0])).forEach(([mk, days]) => {
+      const [y,m] = mk.split("-");
+      const name = new Date(y,m-1,1).toLocaleString("default",{month:"long",year:"numeric"});
+      html += `<div class="cal-month"><h3 class="cal-month-name">${name}</h3><div class="cal-grid">`;
+      days.sort().forEach(dk => {
+        const r = history[dk];
+        const animal = ANIMALS.find(a=>a.id===r.animalId);
+        const emoji  = animal ? animal.emoji : "🐾";
+        const day    = parseInt(dk.split("-")[2]);
+        const pct    = r.total / MAX_TOTAL;
+        const cls    = pct >= 0.8 ? "great" : pct >= 0.5 ? "ok" : "low";
+        html += `<div class="cal-day ${cls}" title="${dk} — ${animal?.name||''}">
+          <span class="cal-emoji">${emoji}</span>
+          <span class="cal-day-num">${day}</span>
+          <span class="cal-score">${r.total}</span>
+        </div>`;
+      });
+      html += `</div></div>`;
+    });
+    container.innerHTML = html;
+  },
+
+  // ── Streak ────────────────────────────────────────────────────────────────
+  renderStreak() {
+    const s = calcStreak();
+    document.getElementById("streak-display").textContent = s > 0 ? `🔥 ${s}` : "";
+  },
+
+  // ── Share ─────────────────────────────────────────────────────────────────
+  async share() {
+    const history = loadHistory();
+    const result  = history[GameState.dateKey] ||
+                    { animalId: GameState.animal.id, locationScore: 0, statusScore: 0, total: 0,
+                      guessLat: GameState.pendingLat||0, guessLng: GameState.pendingLng||0,
+                      guessStatus: GameState.pendingStatus||"LC", insideRange: false, distKm: 9999 };
+    const text = buildShareText(result);
+    if (navigator.share) { try { await navigator.share({ text }); return; } catch {} }
+    await navigator.clipboard.writeText(text).catch(()=>{});
+    const btn = document.getElementById("share-btn");
+    const orig = btn.textContent;
+    btn.textContent = "Copied! ✓";
+    setTimeout(() => btn.textContent = orig, 2000);
+  },
+
+  // ── Modal ─────────────────────────────────────────────────────────────────
+  openModal(type) {
+    document.getElementById("modal-overlay").style.display = "flex";
+    document.getElementById("modal-history").style.display = type==="history" ? "block" : "none";
+    document.getElementById("modal-how").style.display     = type==="how"     ? "block" : "none";
+    document.getElementById("modal-donate").style.display  = type==="donate"  ? "block" : "none";
+    if (type === "history") this.renderHistoryCalendar();
+  },
+
+  closeModal() {
+    document.getElementById("modal-overlay").style.display = "none";
+  },
+};
