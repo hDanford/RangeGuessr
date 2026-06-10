@@ -256,8 +256,8 @@ const UI = {
       }).join(" ");
       const polygon = document.createElementNS("http://www.w3.org/2000/svg","polygon");
       polygon.setAttribute("points", pts);
-      polygon.setAttribute("fill","rgba(255,215,0,0.22)");
-      polygon.setAttribute("stroke","#FFD700");
+      polygon.setAttribute("fill","rgba(160,100,220,0.25)");
+      polygon.setAttribute("stroke","#a855f7");
       polygon.setAttribute("stroke-width","1.8");
       this.rangeGroupEl.appendChild(polygon);
     });
