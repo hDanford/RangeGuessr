@@ -107,5 +107,6 @@ const SCHEDULE = {
   "2026-09-17": "black-rhinoceros",
   "2026-09-18": "platypus",
   "2026-09-19": "jaguar",
-  "2026-09-20": "african-wild-dog"
+  "2026-09-20": "african-wild-dog",
+  "2026-09-21": "tibetan-fox"
 };
