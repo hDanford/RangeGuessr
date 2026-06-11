@@ -340,16 +340,18 @@ const UI = {
     document.getElementById("animal-hint").textContent   = a.hint;
 
     // Thumbnail — show image if available, else show a link to view it
+    const thumbEl    = document.getElementById("animal-thumb");
     const imgEl      = document.getElementById("animal-img");
     const fallbackEl = document.getElementById("animal-img-fallback");
     const creditEl   = document.getElementById("animal-img-credit");
     imgEl.style.display      = "none";
     fallbackEl.style.display = "none";
     creditEl.style.display   = "none";
+    thumbEl.classList.remove("loading");
     if (a.image) {
-      imgEl.src = a.image;
-      imgEl.alt = a.name;
-      imgEl.onload = () => {
+      thumbEl.classList.add("loading");
+      const onLoaded = () => {
+        thumbEl.classList.remove("loading");
         imgEl.style.display    = "block";
         fallbackEl.style.display = "none";
         if (a.imageCredit || a.imageLicense) {
@@ -357,12 +359,18 @@ const UI = {
           creditEl.style.display = "block";
         }
       };
+      imgEl.onload = onLoaded;
       imgEl.onerror = () => {
+        thumbEl.classList.remove("loading");
         imgEl.style.display      = "none";
         fallbackEl.href          = a.image;
         fallbackEl.textContent   = `View ${a.name} photo →`;
         fallbackEl.style.display = "block";
       };
+      imgEl.src = a.image;
+      imgEl.alt = a.name;
+      // Cached image may not fire load again — handle synchronously-complete case
+      if (imgEl.complete && imgEl.naturalWidth > 0) onLoaded();
     } else {
       fallbackEl.style.display = "none";
     }
