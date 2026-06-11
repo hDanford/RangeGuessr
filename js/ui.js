@@ -297,6 +297,7 @@ const UI = {
     document.getElementById("btn-daily").addEventListener("click",    () => this.showDaily());
     document.getElementById("btn-freeplay").addEventListener("click", () => this.showFreeplay());
     document.getElementById("btn-history").addEventListener("click",  () => this.openModal("history"));
+    document.getElementById("btn-stats").addEventListener("click",    () => this.openModal("stats"));
     document.getElementById("btn-how").addEventListener("click",      () => this.openModal("how"));
     document.getElementById("btn-donate").addEventListener("click",   () => this.openModal("donate"));
     document.getElementById("modal-close").addEventListener("click",  () => this.closeModal());
@@ -380,7 +381,7 @@ const UI = {
     badge.style.display = "none"; // populated + revealed in showResult after guessing
 
     if (GameState.mode === "daily") {
-      document.getElementById("mode-label").textContent = `Daily — ${getTodayKey()}`;
+      document.getElementById("mode-label").textContent = `Daily #${puzzleNumber(getTodayKey())}`;
     } else {
       document.getElementById("mode-label").textContent =
         `Free Play · Round ${GameState.freeplayRound} · Session: ${GameState.freeplayScore} pts`;
@@ -402,8 +403,36 @@ const UI = {
     document.getElementById("freeplay-next").style.display = "none";
     document.getElementById("res-fact").textContent        = "";
     document.getElementById("res-region").textContent      = "";
+    this.stopCountdown();
+    document.getElementById("next-countdown").style.display = "none";
 
     this.renderStreak();
+  },
+
+  // ── Countdown to next daily ───────────────────────────────────────────────
+  startCountdown() {
+    const el = document.getElementById("next-countdown");
+    if (!el) return;
+    el.style.display = "block";
+    const tick = () => {
+      const now  = new Date();
+      const next = new Date(now);
+      next.setHours(24, 0, 0, 0); // local midnight
+      const diff = next - now;
+      if (diff <= 0) { el.textContent = "New animal available — refresh!"; this.stopCountdown(); return; }
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      const pad = x => String(x).padStart(2, "0");
+      el.textContent = `Next animal in ${pad(h)}:${pad(m)}:${pad(s)}`;
+    };
+    tick();
+    this.stopCountdown();
+    this._countdownTimer = setInterval(tick, 1000);
+  },
+
+  stopCountdown() {
+    if (this._countdownTimer) { clearInterval(this._countdownTimer); this._countdownTimer = null; }
   },
 
   // ── Range polygon overlay ─────────────────────────────────────────────────
@@ -533,6 +562,9 @@ const UI = {
       document.getElementById("freeplay-next").style.display = "inline-flex";
       document.getElementById("freeplay-score-display").textContent =
         `Session total: ${GameState.freeplayScore} pts`;
+      this.stopCountdown();
+    } else {
+      this.startCountdown();
     }
 
     GameState.submitted = true;
@@ -610,9 +642,47 @@ const UI = {
   openModal(type) {
     document.getElementById("modal-overlay").style.display = "flex";
     document.getElementById("modal-history").style.display = type==="history" ? "block" : "none";
+    document.getElementById("modal-stats").style.display   = type==="stats"   ? "block" : "none";
     document.getElementById("modal-how").style.display     = type==="how"     ? "block" : "none";
     document.getElementById("modal-donate").style.display  = type==="donate"  ? "block" : "none";
     if (type === "history") this.renderHistoryCalendar();
+    if (type === "stats")   this.renderStats();
+  },
+
+  renderStats() {
+    const el = document.getElementById("stats-content");
+    const s = calcStats();
+    if (!s) {
+      el.innerHTML = `<p class="stats-empty">No games played yet. Make your first guess to start tracking stats!</p>`;
+      return;
+    }
+    const bar = (val, max) => {
+      const pct = Math.max(0, Math.min(100, Math.round(val / max * 100)));
+      return `<div class="stats-bar-track"><div class="stats-bar-fill" style="width:${pct}%"></div></div>`;
+    };
+    el.innerHTML = `
+      <div class="stats-grid">
+        <div class="stats-cell"><div class="stats-num">${s.gamesPlayed}</div><div class="stats-cap">Played</div></div>
+        <div class="stats-cell"><div class="stats-num">${s.currentStreak}</div><div class="stats-cap">Streak</div></div>
+        <div class="stats-cell"><div class="stats-num">${s.maxStreak}</div><div class="stats-cap">Max Streak</div></div>
+        <div class="stats-cell"><div class="stats-num">${s.bestScore.toLocaleString()}</div><div class="stats-cap">Best Score</div></div>
+      </div>
+      <div class="stats-section">
+        <h3>Average score <span class="stats-avg-total">${s.avgTotal.toLocaleString()} / 10,000</span></h3>
+        <div class="stats-line"><span class="stats-line-label">📍 Location</span><span class="stats-line-val">${s.avgLocation.toLocaleString()}</span></div>
+        ${bar(s.avgLocation, 5000)}
+        <div class="stats-line"><span class="stats-line-label">🏷 Conservation</span><span class="stats-line-val">${s.avgStatus.toLocaleString()}</span></div>
+        ${bar(s.avgStatus, 5000)}
+      </div>
+      <div class="stats-section">
+        <h3>Accuracy</h3>
+        <div class="stats-line"><span class="stats-line-label">Guesses inside range</span><span class="stats-line-val">${s.pctInRange}%</span></div>
+        ${bar(s.pctInRange, 100)}
+        <div class="stats-line"><span class="stats-line-label">Exact conservation status</span><span class="stats-line-val">${s.pctExactStatus}%</span></div>
+        ${bar(s.pctExactStatus, 100)}
+      </div>
+      <p class="stats-foot">Daily games only. Stats are stored on this device.</p>
+    `;
   },
 
   closeModal() {
