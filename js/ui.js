@@ -42,7 +42,14 @@ const UI = {
 
   // ── Map construction ──────────────────────────────────────────────────────
   buildMapBase() {
-    // Background terrain handled by CSS background-image on .map-wrap
+    // Terrain background as SVG image — zooms/pans with the viewBox
+    const terrain = document.createElementNS("http://www.w3.org/2000/svg","image");
+    terrain.setAttribute("href","img/terrain.jpg");
+    terrain.setAttributeNS("http://www.w3.org/1999/xlink","xlink:href","img/terrain.jpg");
+    terrain.setAttribute("x","0"); terrain.setAttribute("y","0");
+    terrain.setAttribute("width","900"); terrain.setAttribute("height","460");
+    terrain.setAttribute("preserveAspectRatio","none");
+    this.svgEl.appendChild(terrain);
 
     // Country fills from countries.js (Natural Earth data)
     Object.entries(COUNTRY_PATHS).forEach(([iso, entry]) => {
