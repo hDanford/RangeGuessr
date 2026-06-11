@@ -821,18 +821,43 @@ footer a:hover { color: #fff; }
 .stats-empty-sm { color:var(--ink-lite); font-size:0.85rem; padding:4px 0 8px; }
 
 /* ── Animal Dex ───────────────────────────────────────────────────────────── */
-.dex-summary { font-size:0.9rem; color:var(--ink-mid); margin-bottom:16px; }
+.dex-summary { font-size:0.9rem; color:var(--ink-mid); margin-bottom:14px; }
 .dex-summary strong { color:var(--forest); }
-.dex-list { display:flex; flex-direction:column; gap:6px; max-height:48vh; overflow-y:auto; }
-.dex-row {
-  display:flex; align-items:center; gap:10px;
-  background:var(--parchment); border-radius:8px; padding:8px 12px;
+
+.dex-sort-bar { display:flex; gap:6px; margin-bottom:14px; flex-wrap:wrap; }
+.dex-sort-btn {
+  font:inherit; font-size:0.74rem; font-weight:600; cursor:pointer;
+  padding:5px 11px; border-radius:14px; border:1px solid var(--border);
+  background:var(--cream); color:var(--ink-mid); transition:all .12s;
 }
-.dex-emoji { font-size:1.4rem; flex:0 0 auto; }
-.dex-info { display:flex; flex-direction:column; flex:1 1 auto; min-width:0; }
-.dex-name { font-weight:600; color:var(--ink); font-size:0.92rem; }
-.dex-sub  { font-size:0.7rem; color:var(--ink-lite); }
-.dex-best { font-weight:700; color:var(--forest); font-variant-numeric:tabular-nums; flex:0 0 auto; }
+.dex-sort-btn:hover { border-color:var(--forest-lite); }
+.dex-sort-btn.active { background:var(--forest); border-color:var(--forest); color:#fff; }
+
+.dex-grid {
+  display:grid; grid-template-columns:repeat(3,1fr); gap:8px;
+  max-height:52vh; overflow-y:auto; padding:2px;
+}
+.dex-card {
+  display:flex; flex-direction:column; align-items:center; text-align:center;
+  background:var(--parchment); border-radius:10px; padding:10px 6px 8px;
+  position:relative; min-height:96px; justify-content:center; gap:2px;
+}
+.dex-card-emoji { font-size:1.7rem; line-height:1; }
+.dex-card-name  { font-size:0.74rem; font-weight:600; color:var(--ink); line-height:1.15; }
+.dex-card-badge {
+  font-size:0.58rem; font-weight:700; padding:1px 5px; border-radius:6px; margin-top:1px;
+}
+.dex-card-score { font-size:0.95rem; font-weight:700; color:var(--forest); font-variant-numeric:tabular-nums; }
+.dex-card-sub   { font-size:0.56rem; color:var(--ink-lite); line-height:1.2; }
+
+.dex-card--locked { background:#eceae2; }
+.dex-card--locked .dex-card-emoji { filter:grayscale(1); opacity:0.45; }
+.dex-card--locked .dex-card-name  { color:var(--ink-lite); letter-spacing:0.06em; }
+.dex-card--locked .dex-card-score { font-size:1.1rem; color:var(--ink-lite); }
+
+@media (max-width:420px){
+  .dex-grid { grid-template-columns:repeat(2,1fr); }
+}
 
 /* ── Footer contact ───────────────────────────────────────────────────────── */
 .footer-contact {
