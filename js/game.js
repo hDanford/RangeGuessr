@@ -12,6 +12,14 @@ function getTodayKey() {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
+// Daily #1 = first scheduled day
+const PUZZLE_EPOCH = "2026-06-09";
+function puzzleNumber(dateKey) {
+  const [y,m,d]    = dateKey.split("-").map(Number);
+  const [ey,em,ed] = PUZZLE_EPOCH.split("-").map(Number);
+  return Math.round((Date.UTC(y,m-1,d) - Date.UTC(ey,em-1,ed)) / 86400000) + 1;
+}
+
 function hashStr(s) {
   let h = 5381;
   for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
@@ -149,6 +157,47 @@ function calcStreak() {
   return streak;
 }
 
+// ─── Stats ────────────────────────────────────────────────────────────────────
+function calcStats() {
+  const history = loadHistory();
+  const results = Object.values(history);
+  const n = results.length;
+  if (!n) return null;
+
+  let sumLoc = 0, sumStat = 0, sumTotal = 0, best = 0, inRange = 0, exactStatus = 0;
+  for (const r of results) {
+    sumLoc   += r.locationScore;
+    sumStat  += r.statusScore;
+    sumTotal += r.total;
+    if (r.total > best)        best = r.total;
+    if (r.insideRange)         inRange++;
+    if (r.statusScore === MAX_STATUS_SCORE) exactStatus++; // only exact matches hit 5000
+  }
+
+  // Max streak: longest run of consecutive day keys (UTC math avoids DST issues)
+  const keys = Object.keys(history).sort();
+  let maxStreak = 0, cur = 0, prev = null;
+  for (const k of keys) {
+    const [y,m,d] = k.split("-").map(Number);
+    const t = Date.UTC(y, m-1, d);
+    cur = (prev !== null && t - prev === 86400000) ? cur + 1 : 1;
+    if (cur > maxStreak) maxStreak = cur;
+    prev = t;
+  }
+
+  return {
+    gamesPlayed:   n,
+    avgLocation:   Math.round(sumLoc / n),
+    avgStatus:     Math.round(sumStat / n),
+    avgTotal:      Math.round(sumTotal / n),
+    bestScore:     best,
+    pctInRange:    Math.round(inRange / n * 100),
+    pctExactStatus:Math.round(exactStatus / n * 100),
+    currentStreak: calcStreak(),
+    maxStreak,
+  };
+}
+
 // ─── Game State ───────────────────────────────────────────────────────────────
 const GameState = {
   mode: "daily",
@@ -246,7 +295,7 @@ function buildShareText(result) {
   const a = ANIMALS.find(x => x.id === result.animalId);
   const locBar  = scoreBar(result.locationScore, MAX_LOCATION_SCORE);
   const statBar = scoreBar(result.statusScore, MAX_STATUS_SCORE);
-  const mode = GameState.mode === "daily" ? `RangeGuessr ${result.date}` : "RangeGuessr — Free Play";
+  const mode = GameState.mode === "daily" ? `RangeGuessr #${puzzleNumber(result.date)}` : "RangeGuessr — Free Play";
   return `${mode}\n${a.emoji} ${a.name}\n📍 Location: ${locBar} ${result.locationScore}\n🏷 Status:   ${statBar} ${result.statusScore}\n🌿 Total: ${result.total}/10000\nhttps://rangeguessr.com`;
 }
 
