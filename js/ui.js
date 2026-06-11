@@ -21,12 +21,22 @@ const UI = {
   rangeGroupEl: null,
   resultMarkerEl: null,
 
+  // ── Zoom / pan state ──────────────────────────────────────────────────────
+  zoom: 1,
+  panX: 0,
+  panY: 0,
+  MAX_ZOOM: 10,
+  MIN_ZOOM: 1,
+  _isPanning: false,
+  _panStart: null,
+
   init() {
     this.svgEl = document.getElementById("world-svg");
     this.buildMapBase();
     this.bindNav();
     this.bindStatusPicker();
     this.bindSubmit();
+    this.bindZoom();
     this.renderStreak();
   },
 
@@ -73,11 +83,13 @@ const UI = {
 
   handleMapClick(e) {
     if (GameState.submitted) return;
+    if (this._didPan) return; // don't register click after a drag
     const rect = this.svgEl.getBoundingClientRect();
-    const scaleX = MAP_W / rect.width;
-    const scaleY = MAP_H / rect.height;
-    const x = (e.clientX - rect.left) * scaleX;
-    const y = (e.clientY - rect.top)  * scaleY;
+    // Account for zoom/pan: SVG coords are in viewBox space
+    const vbX = this.panX, vbY = this.panY;
+    const vbW = MAP_W / this.zoom, vbH = MAP_H / this.zoom;
+    const x = vbX + (e.clientX - rect.left) / rect.width  * vbW;
+    const y = vbY + (e.clientY - rect.top)  / rect.height * vbH;
     const { lat, lng } = xyToLatLng(x, y);
 
     GameState.pendingLat = lat;
@@ -96,6 +108,143 @@ const UI = {
 
     this.updateSubmitBtn();
     document.getElementById("map-instruction").textContent = locText;
+  },
+
+
+  // ── Zoom & pan ────────────────────────────────────────────────────────────
+  bindZoom() {
+    const svg = this.svgEl;
+
+    // Apply initial viewBox
+    this._applyViewBox();
+
+    // Scroll to zoom (centered on cursor)
+    svg.addEventListener("wheel", e => {
+      e.preventDefault();
+      const rect = svg.getBoundingClientRect();
+      const cursorXFrac = (e.clientX - rect.left) / rect.width;
+      const cursorYFrac = (e.clientY - rect.top)  / rect.height;
+
+      const factor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
+      const newZoom = Math.min(this.MAX_ZOOM, Math.max(this.MIN_ZOOM, this.zoom * factor));
+      if (newZoom === this.zoom) return;
+
+      // Keep the point under the cursor stationary
+      const vbW = MAP_W / this.zoom, vbH = MAP_H / this.zoom;
+      const svgX = this.panX + cursorXFrac * vbW;
+      const svgY = this.panY + cursorYFrac * vbH;
+
+      this.zoom = newZoom;
+      const newVbW = MAP_W / this.zoom, newVbH = MAP_H / this.zoom;
+      this.panX = svgX - cursorXFrac * newVbW;
+      this.panY = svgY - cursorYFrac * newVbH;
+      this._clampPan();
+      this._applyViewBox();
+      this._updateCursor();
+    }, { passive: false });
+
+    // Drag to pan
+    svg.addEventListener("mousedown", e => {
+      if (this.zoom <= 1) return;
+      this._isPanning = true;
+      this._didPan = false;
+      this._panStart = { x: e.clientX, y: e.clientY, px: this.panX, py: this.panY };
+      svg.style.cursor = "grabbing";
+    });
+    window.addEventListener("mousemove", e => {
+      if (!this._isPanning) return;
+      const dx = e.clientX - this._panStart.x;
+      const dy = e.clientY - this._panStart.y;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) this._didPan = true;
+      const rect = svg.getBoundingClientRect();
+      const vbW = MAP_W / this.zoom, vbH = MAP_H / this.zoom;
+      this.panX = this._panStart.px - dx / rect.width  * vbW;
+      this.panY = this._panStart.py - dy / rect.height * vbH;
+      this._clampPan();
+      this._applyViewBox();
+    });
+    window.addEventListener("mouseup", () => {
+      if (!this._isPanning) return;
+      this._isPanning = false;
+      this._updateCursor();
+    });
+
+    // Touch pan/pinch
+    let lastTouches = null;
+    svg.addEventListener("touchstart", e => {
+      lastTouches = e.touches;
+      this._didPan = false;
+    }, { passive: true });
+    svg.addEventListener("touchmove", e => {
+      e.preventDefault();
+      if (e.touches.length === 1 && this.zoom > 1) {
+        const rect = svg.getBoundingClientRect();
+        const vbW = MAP_W / this.zoom, vbH = MAP_H / this.zoom;
+        const dx = e.touches[0].clientX - lastTouches[0].clientX;
+        const dy = e.touches[0].clientY - lastTouches[0].clientY;
+        if (Math.abs(dx) > 3 || Math.abs(dy) > 3) this._didPan = true;
+        this.panX -= dx / rect.width  * vbW;
+        this.panY -= dy / rect.height * vbH;
+        this._clampPan();
+        this._applyViewBox();
+      } else if (e.touches.length === 2 && lastTouches.length === 2) {
+        const prevDist = Math.hypot(
+          lastTouches[0].clientX - lastTouches[1].clientX,
+          lastTouches[0].clientY - lastTouches[1].clientY);
+        const newDist  = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY);
+        if (prevDist === 0) { lastTouches = e.touches; return; }
+        const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        const rect  = svg.getBoundingClientRect();
+        const fracX = (midX - rect.left) / rect.width;
+        const fracY = (midY - rect.top)  / rect.height;
+        const vbW = MAP_W / this.zoom, vbH = MAP_H / this.zoom;
+        const svgX = this.panX + fracX * vbW;
+        const svgY = this.panY + fracY * vbH;
+        const factor = newDist / prevDist;
+        this.zoom = Math.min(this.MAX_ZOOM, Math.max(this.MIN_ZOOM, this.zoom * factor));
+        const newVbW = MAP_W / this.zoom, newVbH = MAP_H / this.zoom;
+        this.panX = svgX - fracX * newVbW;
+        this.panY = svgY - fracY * newVbH;
+        this._clampPan();
+        this._applyViewBox();
+        this._updateCursor();
+      }
+      lastTouches = e.touches;
+    }, { passive: false });
+
+    // Double-click to reset
+    svg.addEventListener("dblclick", () => this.resetZoom());
+
+    // Reset button
+    const resetBtn = document.getElementById("zoom-reset-btn");
+    if (resetBtn) resetBtn.addEventListener("click", () => this.resetZoom());
+  },
+
+  resetZoom() {
+    this.zoom = 1; this.panX = 0; this.panY = 0;
+    this._applyViewBox();
+    this._updateCursor();
+  },
+
+  _applyViewBox() {
+    const vbW = MAP_W / this.zoom;
+    const vbH = MAP_H / this.zoom;
+    this.svgEl.setAttribute("viewBox", `${this.panX} ${this.panY} ${vbW} ${vbH}`);
+    const resetBtn = document.getElementById("zoom-reset-btn");
+    if (resetBtn) resetBtn.style.display = this.zoom > 1 ? "flex" : "none";
+  },
+
+  _clampPan() {
+    const vbW = MAP_W / this.zoom, vbH = MAP_H / this.zoom;
+    this.panX = Math.max(0, Math.min(MAP_W - vbW, this.panX));
+    this.panY = Math.max(0, Math.min(MAP_H - vbH, this.panY));
+  },
+
+  _updateCursor() {
+    this.svgEl.style.cursor = this.zoom > 1 ? "grab" : "crosshair";
   },
 
   // ── Status picker ─────────────────────────────────────────────────────────
