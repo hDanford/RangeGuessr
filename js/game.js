@@ -5,6 +5,8 @@ const MAX_TOTAL             = 10000;
 const LOCATION_DECAY_KM     = 10000;  // km at which location score reaches ~0
 const STATUS_POINTS_PER_STEP = 1000; // lose 1000 per IUCN step off
 const STORAGE_KEY           = "rangeguessr_v2_history";
+const FREEPLAY_STATS_KEY    = "rangeguessr_v2_freeplay";
+const ANIMALDEX_KEY         = "rangeguessr_v2_animaldex";
 
 // ─── Date helpers ─────────────────────────────────────────────────────────────
 function getTodayKey() {
@@ -137,6 +139,48 @@ function saveResult(dateKey, result) {
   const h = loadHistory();
   h[dateKey] = result;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(h));
+}
+
+// ─── Free Play stats ──────────────────────────────────────────────────────────
+function loadFreeplayStats() {
+  try { return JSON.parse(localStorage.getItem(FREEPLAY_STATS_KEY)) || { gamesPlayed: 0, highScore: 0, bestSession: 0 }; }
+  catch { return { gamesPlayed: 0, highScore: 0, bestSession: 0 }; }
+}
+
+function saveFreeplayStats(s) {
+  localStorage.setItem(FREEPLAY_STATS_KEY, JSON.stringify(s));
+}
+
+// Called once per freeplay round submitted. `roundTotal` is that round's score;
+// `sessionTotal` is the running session total after this round.
+function recordFreeplayRound(roundTotal, sessionTotal) {
+  const s = loadFreeplayStats();
+  s.gamesPlayed += 1;
+  if (roundTotal  > s.highScore)   s.highScore   = roundTotal;   // best single round
+  if (sessionTotal > s.bestSession) s.bestSession = sessionTotal; // best session run
+  saveFreeplayStats(s);
+}
+
+// ─── Animal Dex (best score per animal, across both modes) ─────────────────────
+function loadAnimalDex() {
+  try { return JSON.parse(localStorage.getItem(ANIMALDEX_KEY)) || {}; }
+  catch { return {}; }
+}
+
+// dex shape: { [animalId]: { bestTotal, bestLocation, bestStatus, plays, lastMode, lastPlayed } }
+function recordAnimalPlay(result, mode) {
+  const dex = loadAnimalDex();
+  const id  = result.animalId;
+  const prev = dex[id] || { bestTotal: 0, bestLocation: 0, bestStatus: 0, plays: 0 };
+  dex[id] = {
+    bestTotal:    Math.max(prev.bestTotal,    result.total),
+    bestLocation: Math.max(prev.bestLocation, result.locationScore),
+    bestStatus:   Math.max(prev.bestStatus,   result.statusScore),
+    plays:        prev.plays + 1,
+    lastMode:     mode,
+    lastPlayed:   result.date || getTodayKey(),
+  };
+  localStorage.setItem(ANIMALDEX_KEY, JSON.stringify(dex));
 }
 
 // result shape: { animalId, guessLat, guessLng, guessStatus, locationScore, statusScore, total, date }
@@ -284,7 +328,11 @@ function submitGuess() {
     saveResult(GameState.dateKey, result);
   } else {
     GameState.freeplayScore += total;
+    recordFreeplayRound(total, GameState.freeplayScore);
   }
+
+  // Per-animal best, across both modes
+  recordAnimalPlay(result, GameState.mode);
 
   GameState.lastResult = result;
   return result;
