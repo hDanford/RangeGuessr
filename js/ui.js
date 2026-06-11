@@ -179,8 +179,8 @@ const UI = {
       this._didPan = false;
     }, { passive: true });
     svg.addEventListener("touchmove", e => {
-      e.preventDefault();
       if (e.touches.length === 1 && this.zoom > 1) {
+        e.preventDefault();
         const rect = svg.getBoundingClientRect();
         const vbW = MAP_W / this.zoom, vbH = MAP_H / this.zoom;
         const dx = e.touches[0].clientX - lastTouches[0].clientX;
@@ -191,6 +191,7 @@ const UI = {
         this._clampPan();
         this._applyViewBox();
       } else if (e.touches.length === 2 && lastTouches.length === 2) {
+        e.preventDefault();
         const prevDist = Math.hypot(
           lastTouches[0].clientX - lastTouches[1].clientX,
           lastTouches[0].clientY - lastTouches[1].clientY);
@@ -333,7 +334,6 @@ const UI = {
   // ── Game render ───────────────────────────────────────────────────────────
   renderGame() {
     const a = GameState.animal;
-    const meta = STATUS_META[a.status] || STATUS_META["LC"];
 
     document.getElementById("animal-name").textContent   = a.name;
     document.getElementById("animal-sci").textContent    = a.scientificName || "";
@@ -368,10 +368,8 @@ const UI = {
     }
 
     const badge = document.getElementById("status-badge");
-    badge.textContent      = meta.label;
-    badge.style.background = meta.bg;
-    badge.style.color      = meta.color;
-    badge.style.display    = "none"; // revealed after guessing
+    badge.textContent   = "";
+    badge.style.display = "none"; // populated + revealed in showResult after guessing
 
     if (GameState.mode === "daily") {
       document.getElementById("mode-label").textContent = `Daily — ${getTodayKey()}`;
@@ -490,6 +488,12 @@ const UI = {
     if (stepsOff === 0) {
       statusLine.textContent = "Exact conservation status! 🎯";
       statusLine.className = "res-detail perfect";
+    } else if (a.status === "DD") {
+      statusLine.textContent = `Not enough data to assess this species — correct: ${correctMeta.label}`;
+      statusLine.className = "res-detail hot";
+    } else if (result.guessStatus === "DD") {
+      statusLine.textContent = `This species has been assessed — correct: ${correctMeta.label}`;
+      statusLine.className = "res-detail cold";
     } else {
       statusLine.textContent = `${stepsOff} step${stepsOff>1?"s":""} off — correct: ${correctMeta.label}`;
       statusLine.className = "res-detail " + (stepsOff === 1 ? "hot" : stepsOff === 2 ? "warm" : "cold");
@@ -580,7 +584,8 @@ const UI = {
   // ── Share ─────────────────────────────────────────────────────────────────
   async share() {
     const history = loadHistory();
-    const result  = history[GameState.dateKey] ||
+    const result  = GameState.lastResult ||
+                    history[GameState.dateKey] ||
                     { animalId: GameState.animal.id, locationScore: 0, statusScore: 0, total: 0,
                       guessLat: GameState.pendingLat||0, guessLng: GameState.pendingLng||0,
                       guessStatus: GameState.pendingStatus||"LC", insideRange: false, distKm: 9999 };
