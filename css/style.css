@@ -768,3 +768,49 @@ footer a:hover { color: #fff; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ── Stats modal ──────────────────────────────────────────────────────────── */
+.stats-empty { text-align:center; color:var(--ink-lite); padding:24px 8px; }
+.stats-grid {
+  display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:18px;
+}
+.stats-cell {
+  background:var(--parchment); border-radius:8px; padding:12px 6px; text-align:center;
+}
+.stats-num { font-size:1.5rem; font-weight:700; color:var(--forest); line-height:1.1; }
+.stats-cap { font-size:0.66rem; color:var(--ink-lite); text-transform:uppercase; letter-spacing:0.04em; margin-top:3px; }
+.stats-section { margin-bottom:18px; }
+.stats-section h3 {
+  font-size:0.95rem; color:var(--forest); margin:0 0 10px;
+  display:flex; justify-content:space-between; align-items:baseline;
+}
+.stats-avg-total { font-size:0.8rem; font-weight:600; color:var(--forest-mid); }
+.stats-line {
+  display:flex; justify-content:space-between; font-size:0.82rem; color:var(--ink-mid); margin:8px 0 3px;
+}
+.stats-line-val { font-weight:700; color:var(--forest); }
+.stats-bar-track { height:7px; background:var(--parchment); border-radius:4px; overflow:hidden; }
+.stats-bar-fill { height:100%; background:var(--forest-lite); border-radius:4px; transition:width .4s ease; }
+.stats-foot { font-size:0.66rem; color:var(--ink-lite); text-align:center; margin-top:14px; }
+@media (max-width:420px){
+  .stats-grid { grid-template-columns:repeat(2,1fr); }
+  .stats-num { font-size:1.3rem; }
+}
+
+/* ── Next-animal countdown ────────────────────────────────────────────────── */
+.next-countdown {
+  margin-top:12px; text-align:center; font-size:0.82rem; font-weight:600;
+  color:var(--forest-mid); background:var(--parchment);
+  padding:8px 12px; border-radius:8px; font-variant-numeric:tabular-nums;
+}
+
+/* ── Content pages (About / Privacy) ──────────────────────────────────────── */
+.content-page {
+  max-width:720px; margin:0 auto; padding:32px 20px 64px; line-height:1.7; color:var(--ink-mid);
+}
+.content-page h1 { color:var(--forest); font-size:1.9rem; margin:0 0 8px; }
+.content-page h2 { color:var(--forest-mid); font-size:1.2rem; margin:28px 0 6px; }
+.content-page p { margin:0 0 12px; }
+.content-page a { color:var(--forest-lite); }
+.content-updated { font-size:0.8rem; color:var(--ink-lite); margin-top:0; }
+.content-foot { margin-top:36px; padding-top:16px; border-top:1px solid var(--border); font-size:0.85rem; }
