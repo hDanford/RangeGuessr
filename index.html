@@ -20,7 +20,20 @@
   <meta name="referrer" content="no-referrer"/>
   <meta name="theme-color" content="#1a3a1a"/>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌍</text></svg>"/>
+  <link rel="canonical" href="https://rangeguessr.com/"/>
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="apple-touch-icon" href="img/icon-192.png"/>
   <link rel="stylesheet" href="css/style.css"/>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "RangeGuessr",
+    "url": "https://rangeguessr.com/",
+    "description": "A daily wildlife geography game. Guess where an animal lives and its IUCN conservation status, then learn about the species.",
+    "inLanguage": "en"
+  }
+  </script>
   <!-- Google AdSense: replace publisher ID below and uncomment when live -->
   <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
 </head>
@@ -47,6 +60,7 @@
     <button class="nav-btn active" id="btn-daily">Daily</button>
     <button class="nav-btn"        id="btn-freeplay">Free Play</button>
     <button class="nav-btn"        id="btn-history">History</button>
+    <button class="nav-btn"        id="btn-stats">Stats</button>
     <button class="nav-btn"        id="btn-how">How to Play</button>
     <button class="nav-btn nav-btn--donate" id="btn-donate">Donate</button>
   </nav>
@@ -148,6 +162,7 @@
     </div>
     <div class="res-fact"   id="res-fact"></div>
     <div class="res-region" id="res-region"></div>
+    <div class="next-countdown" id="next-countdown" style="display:none"></div>
   </div>
 
   <!-- Bottom ad -->
@@ -219,7 +234,16 @@
         <p>Unlimited animals in random order. Score accumulates for your session but doesn't affect your daily streak.</p>
       </div>
     </div>
-  </div>  <!-- Donate -->
+  </div>  <!-- Stats -->
+  <div class="modal" id="modal-stats" style="display:none">
+    <div class="modal-header">
+      <span class="modal-title">📊 Your Stats</span>
+      <button class="modal-close" onclick="UI.closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="stats-content"></div>
+  </div>
+
+  <!-- Donate -->
   <div class="modal" id="modal-donate" style="display:none">
     <div class="modal-header">
       <span class="modal-title">♥ Support RangeGuessr</span>
@@ -256,7 +280,7 @@
 
 </div>
 <footer>
-  <p>RangeGuessr: Conservation Guessing Game &nbsp;|&nbsp; Occurrence data & images: <a href="https://www.gbif.org" target="_blank" rel="noopener">GBIF.org</a> (CC BY 4.0) &nbsp;|&nbsp; Map: <a href="https://www.naturalearthdata.com" target="_blank" rel="noopener">Natural Earth</a></p>
+  <p>RangeGuessr: Conservation Guessing Game &nbsp;|&nbsp; <a href="about.html">About</a> &nbsp;|&nbsp; <a href="privacy.html">Privacy</a> &nbsp;|&nbsp; Occurrence data & images: <a href="https://www.gbif.org" target="_blank" rel="noopener">GBIF.org</a> (CC BY 4.0) &nbsp;|&nbsp; Map: <a href="https://www.naturalearthdata.com" target="_blank" rel="noopener">Natural Earth</a></p>
 </footer>
 
 <!-- Scripts -->
