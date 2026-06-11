@@ -237,19 +237,20 @@ nav {
 .map-wrap {
   background-image: url('../img/terrain.jpg');
   background-size: 100% 100%;
+  background-color: #a8d8ea;
   border: 2px solid var(--forest-mid);
   border-radius: var(--radius);
   overflow: hidden;
   cursor: crosshair;
   box-shadow: var(--shadow);
   margin-bottom: 8px;
-  background: transparent;
 }
 
 #world-svg {
   display: block;
   width: 100%;
   height: auto;
+  aspect-ratio: 900 / 460;
   background: transparent;
 }
 
