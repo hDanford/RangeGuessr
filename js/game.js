@@ -97,6 +97,9 @@ function calcStatusScore(guessedStatus, actualStatus) {
   if (actualStatus === 'DD') {
     return guessedStatus === 'DD' ? 5000 : 4000;
   }
+  // Guessing DD for an assessed species is an "I don't know" hedge — flat score
+  // (tunable; without this, DD would score 4000 vs LC due to its STATUS_ORDER position)
+  if (guessedStatus === 'DD') return 2500;
   const guessOrder  = STATUS_ORDER.indexOf(guessedStatus);
   const actualOrder = STATUS_ORDER.indexOf(actualStatus);
   const steps = Math.abs(guessOrder - actualOrder);
@@ -133,11 +136,14 @@ function saveResult(dateKey, result) {
 // ─── Streak ───────────────────────────────────────────────────────────────────
 function calcStreak() {
   const history = loadHistory();
+  const fmt = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   let streak = 0;
   const check = new Date(); check.setHours(0,0,0,0);
+  // If today hasn't been played yet, the streak isn't broken until tomorrow —
+  // start counting from yesterday.
+  if (!history[fmt(check)]) check.setDate(check.getDate()-1);
   for (let i = 0; i < 365; i++) {
-    const key = check.toISOString().slice(0,10);
-    if (history[key]) { streak++; check.setDate(check.getDate()-1); }
+    if (history[fmt(check)]) { streak++; check.setDate(check.getDate()-1); }
     else break;
   }
   return streak;
@@ -155,6 +161,7 @@ const GameState = {
   freeplayScore: 0,
   freeplayRound: 0,
   freeplayUsedIds: [],
+  lastResult: null,
 };
 
 function startDaily() {
@@ -170,8 +177,10 @@ function startDaily() {
   const history = loadHistory();
   if (history[dateKey]) {
     GameState.submitted = true;
+    GameState.lastResult = history[dateKey];
     return { alreadyPlayed: true, result: history[dateKey] };
   }
+  GameState.lastResult = null;
   return { alreadyPlayed: false };
 }
 
@@ -193,6 +202,7 @@ function nextFreeplayAnimal() {
   GameState.pendingLng = null;
   GameState.pendingStatus = null;
   GameState.submitted = false;
+  GameState.lastResult = null;
   GameState.freeplayRound++;
 }
 
@@ -227,6 +237,7 @@ function submitGuess() {
     GameState.freeplayScore += total;
   }
 
+  GameState.lastResult = result;
   return result;
 }
 
@@ -236,7 +247,7 @@ function buildShareText(result) {
   const locBar  = scoreBar(result.locationScore, MAX_LOCATION_SCORE);
   const statBar = scoreBar(result.statusScore, MAX_STATUS_SCORE);
   const mode = GameState.mode === "daily" ? `RangeGuessr ${result.date}` : "RangeGuessr — Free Play";
-  return `${mode}\n${a.emoji} ${a.name}\n📍 Location: ${locBar} ${result.locationScore}\n🏷 Status:   ${statBar} ${result.statusScore}\n🌿 Total: ${result.total}/10000\nhttps://rangeguessr.game`;
+  return `${mode}\n${a.emoji} ${a.name}\n📍 Location: ${locBar} ${result.locationScore}\n🏷 Status:   ${statBar} ${result.statusScore}\n🌿 Total: ${result.total}/10000\nhttps://rangeguessr.com`;
 }
 
 function scoreBar(score, max) {
