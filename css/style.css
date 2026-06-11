@@ -167,6 +167,22 @@ nav {
   background: var(--parchment);
   margin-bottom: 10px;
 }
+.animal-thumb.loading {
+  min-height: 200px;
+  background: linear-gradient(100deg,
+    var(--parchment) 35%,
+    rgba(255,255,255,0.75) 50%,
+    var(--parchment) 65%);
+  background-size: 300% 100%;
+  animation: thumb-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes thumb-shimmer {
+  0%   { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .animal-thumb.loading { animation: none; }
+}
 .animal-img {
   width: 100%;
   max-height: 340px;
