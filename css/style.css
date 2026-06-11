@@ -867,3 +867,17 @@ footer a:hover { color: #fff; }
 .footer-contact strong { display:block; color:var(--cream); font-size:1rem; margin-bottom:4px; }
 .footer-contact p { margin:4px 0; font-size:0.85rem; }
 .footer-contact-links a { font-weight:600; white-space:nowrap; }
+
+/* ── Stats modal tabs ─────────────────────────────────────────────────────── */
+.stats-tabs {
+  display:flex; gap:2px; padding:0 12px; background:var(--forest);
+  flex-shrink:0;
+}
+.stats-tab {
+  flex:1; font:inherit; font-size:0.82rem; font-weight:600; cursor:pointer;
+  padding:10px 8px; border:none; background:transparent;
+  color:rgba(255,255,255,0.65); border-bottom:3px solid transparent;
+  transition:color .12s, border-color .12s;
+}
+.stats-tab:hover { color:rgba(255,255,255,0.9); }
+.stats-tab.active { color:#fff; border-bottom-color:var(--gold); }
