@@ -296,12 +296,12 @@ const UI = {
   bindNav() {
     document.getElementById("btn-daily").addEventListener("click",    () => this.showDaily());
     document.getElementById("btn-freeplay").addEventListener("click", () => this.showFreeplay());
-    document.getElementById("btn-history").addEventListener("click",  () => this.openModal("history"));
     document.getElementById("btn-stats").addEventListener("click",    () => this.openModal("stats"));
-    document.getElementById("btn-dex").addEventListener("click",      () => this.openModal("dex"));
     document.getElementById("btn-how").addEventListener("click",      () => this.openModal("how"));
     document.getElementById("btn-donate").addEventListener("click",   () => this.openModal("donate"));
-    document.getElementById("modal-close").addEventListener("click",  () => this.closeModal());
+    document.querySelectorAll(".stats-tab").forEach(tab => {
+      tab.addEventListener("click", () => this.switchStatsTab(tab.dataset.tab));
+    });
     document.getElementById("modal-overlay").addEventListener("click", e => {
       if (e.target.id === "modal-overlay") this.closeModal();
     });
@@ -579,7 +579,7 @@ const UI = {
   // ── History ───────────────────────────────────────────────────────────────
   renderHistoryCalendar() {
     const history = loadHistory();
-    const container = document.getElementById("history-content");
+    const container = document.getElementById("tabpanel-history");
     const dates = Object.keys(history).sort().reverse();
 
     if (!dates.length) {
@@ -642,18 +642,28 @@ const UI = {
   // ── Modal ─────────────────────────────────────────────────────────────────
   openModal(type) {
     document.getElementById("modal-overlay").style.display = "flex";
-    document.getElementById("modal-history").style.display = type==="history" ? "block" : "none";
     document.getElementById("modal-stats").style.display   = type==="stats"   ? "block" : "none";
-    document.getElementById("modal-dex").style.display     = type==="dex"     ? "block" : "none";
     document.getElementById("modal-how").style.display     = type==="how"     ? "block" : "none";
     document.getElementById("modal-donate").style.display  = type==="donate"  ? "block" : "none";
-    if (type === "history") this.renderHistoryCalendar();
-    if (type === "stats")   this.renderStats();
-    if (type === "dex")     this.renderDex();
+    if (type === "stats") this.switchStatsTab(this._statsTab || "stats");
+  },
+
+  switchStatsTab(tab) {
+    this._statsTab = tab;
+    document.querySelectorAll(".stats-tab").forEach(b => {
+      b.classList.toggle("active", b.dataset.tab === tab);
+    });
+    ["stats","history","dex"].forEach(t => {
+      const panel = document.getElementById("tabpanel-" + t);
+      if (panel) panel.style.display = t === tab ? "block" : "none";
+    });
+    if (tab === "stats")   this.renderStats();
+    if (tab === "history") this.renderHistoryCalendar();
+    if (tab === "dex")     this.renderDex();
   },
 
   renderStats() {
-    const el = document.getElementById("stats-content");
+    const el = document.getElementById("tabpanel-stats");
     const s = calcStats();
     if (!s) {
       const fpEmpty = loadFreeplayStats().gamesPlayed === 0;
@@ -711,7 +721,7 @@ const UI = {
   },
 
   renderDex() {
-    const el  = document.getElementById("dex-content");
+    const el  = document.getElementById("tabpanel-dex");
     const dex = loadAnimalDex();
     const totalAnimals = ANIMALS.length;
     const collected = ANIMALS.filter(a => dex[a.id]).length;
