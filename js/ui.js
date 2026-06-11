@@ -298,6 +298,7 @@ const UI = {
     document.getElementById("btn-freeplay").addEventListener("click", () => this.showFreeplay());
     document.getElementById("btn-history").addEventListener("click",  () => this.openModal("history"));
     document.getElementById("btn-stats").addEventListener("click",    () => this.openModal("stats"));
+    document.getElementById("btn-dex").addEventListener("click",      () => this.openModal("dex"));
     document.getElementById("btn-how").addEventListener("click",      () => this.openModal("how"));
     document.getElementById("btn-donate").addEventListener("click",   () => this.openModal("donate"));
     document.getElementById("modal-close").addEventListener("click",  () => this.closeModal());
@@ -643,17 +644,24 @@ const UI = {
     document.getElementById("modal-overlay").style.display = "flex";
     document.getElementById("modal-history").style.display = type==="history" ? "block" : "none";
     document.getElementById("modal-stats").style.display   = type==="stats"   ? "block" : "none";
+    document.getElementById("modal-dex").style.display     = type==="dex"     ? "block" : "none";
     document.getElementById("modal-how").style.display     = type==="how"     ? "block" : "none";
     document.getElementById("modal-donate").style.display  = type==="donate"  ? "block" : "none";
     if (type === "history") this.renderHistoryCalendar();
     if (type === "stats")   this.renderStats();
+    if (type === "dex")     this.renderDex();
   },
 
   renderStats() {
     const el = document.getElementById("stats-content");
     const s = calcStats();
     if (!s) {
-      el.innerHTML = `<p class="stats-empty">No games played yet. Make your first guess to start tracking stats!</p>`;
+      const fpEmpty = loadFreeplayStats().gamesPlayed === 0;
+      if (fpEmpty) {
+        el.innerHTML = `<p class="stats-empty">No games played yet. Make your first guess to start tracking stats!</p>`;
+      } else {
+        el.innerHTML = `<p class="stats-empty-sm">No Daily games yet — play one to track location/conservation averages and streaks.</p>${this.freeplayStatsBlock()}`;
+      }
       return;
     }
     const bar = (val, max) => {
@@ -681,7 +689,67 @@ const UI = {
         <div class="stats-line"><span class="stats-line-label">Exact conservation status</span><span class="stats-line-val">${s.pctExactStatus}%</span></div>
         ${bar(s.pctExactStatus, 100)}
       </div>
-      <p class="stats-foot">Daily games only. Stats are stored on this device.</p>
+      ${this.freeplayStatsBlock()}
+      <p class="stats-foot">Daily stats above. Free Play and per-animal records tracked separately.</p>
+    `;
+  },
+
+  freeplayStatsBlock() {
+    const f = loadFreeplayStats();
+    if (!f.gamesPlayed) {
+      return `<div class="stats-section"><h3>Free Play</h3><p class="stats-empty-sm">No Free Play rounds yet.</p></div>`;
+    }
+    return `
+      <div class="stats-section">
+        <h3>Free Play</h3>
+        <div class="stats-grid stats-grid--3">
+          <div class="stats-cell"><div class="stats-num">${f.gamesPlayed}</div><div class="stats-cap">Rounds</div></div>
+          <div class="stats-cell"><div class="stats-num">${f.highScore.toLocaleString()}</div><div class="stats-cap">Best Round</div></div>
+          <div class="stats-cell"><div class="stats-num">${f.bestSession.toLocaleString()}</div><div class="stats-cap">Best Session</div></div>
+        </div>
+      </div>`;
+  },
+
+  renderDex() {
+    const el  = document.getElementById("dex-content");
+    const dex = loadAnimalDex();
+    const ids = Object.keys(dex);
+    const totalAnimals = ANIMALS.length;
+
+    if (!ids.length) {
+      el.innerHTML = `<p class="stats-empty">No animals played yet. Each animal you guess — in Daily or Free Play — gets logged here with your best score.</p>`;
+      return;
+    }
+
+    // Sort by best total descending
+    const rows = ids
+      .map(id => ({ id, animal: ANIMALS.find(a => a.id === id), ...dex[id] }))
+      .filter(r => r.animal)
+      .sort((a, b) => b.bestTotal - a.bestTotal);
+
+    const collected = rows.length;
+    const pct = Math.round(collected / totalAnimals * 100);
+
+    const rowHtml = rows.map(r => {
+      const meta = STATUS_META[r.animal.status] || STATUS_META["LC"];
+      return `
+        <div class="dex-row">
+          <span class="dex-emoji">${r.animal.emoji || "🐾"}</span>
+          <span class="dex-info">
+            <span class="dex-name">${r.animal.name}</span>
+            <span class="dex-sub">${r.plays} play${r.plays>1?"s":""} · 📍 ${r.bestLocation.toLocaleString()} · 🏷 ${r.bestStatus.toLocaleString()}</span>
+          </span>
+          <span class="dex-best">${r.bestTotal.toLocaleString()}</span>
+        </div>`;
+    }).join("");
+
+    el.innerHTML = `
+      <div class="dex-summary">
+        <strong>${collected}</strong> of <strong>${totalAnimals}</strong> animals played (${pct}%)
+        <div class="stats-bar-track" style="margin-top:8px"><div class="stats-bar-fill" style="width:${pct}%"></div></div>
+      </div>
+      <div class="dex-list">${rowHtml}</div>
+      <p class="stats-foot">Best score per animal across Daily and Free Play. Stored on this device.</p>
     `;
   },
 
