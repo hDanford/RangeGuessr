@@ -235,8 +235,6 @@ nav {
 
 /* ─── Map ───────────────────────────────────────────────────────────────────── */
 .map-wrap {
-  background-image: url('../img/terrain.jpg');
-  background-size: 100% 100%;
   background-color: #a8d8ea;
   border: 2px solid var(--forest-mid);
   border-radius: var(--radius);
