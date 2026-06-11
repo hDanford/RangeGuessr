@@ -250,6 +250,37 @@ nav {
   height: auto;
 }
 
+#zoom-reset-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: none;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(255,255,255,0.88);
+  color: #333;
+  border: 1px solid rgba(0,0,0,0.15);
+  border-radius: 6px;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+  transition: background 0.15s;
+  z-index: 10;
+}
+#zoom-reset-btn:hover {
+  background: rgba(255,255,255,1);
+}
+
+.map-zoom-hint {
+  font-size: 0.7rem;
+  color: #888;
+  text-align: right;
+  margin: -4px 0 4px;
+}
+
 .country {
   fill: #c8dba0;
   stroke: #fff;
