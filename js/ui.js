@@ -713,44 +713,83 @@ const UI = {
   renderDex() {
     const el  = document.getElementById("dex-content");
     const dex = loadAnimalDex();
-    const ids = Object.keys(dex);
     const totalAnimals = ANIMALS.length;
+    const collected = ANIMALS.filter(a => dex[a.id]).length;
+    const pct = totalAnimals ? Math.round(collected / totalAnimals * 100) : 0;
+    const sort = this._dexSort || "played";
 
-    if (!ids.length) {
-      el.innerHTML = `<p class="stats-empty">No animals played yet. Each animal you guess — in Daily or Free Play — gets logged here with your best score.</p>`;
-      return;
+    // Build a record for every animal; played ones carry their dex entry
+    let entries = ANIMALS.map(a => {
+      const d = dex[a.id];
+      return {
+        animal: a,
+        played: !!d,
+        bestTotal:    d ? d.bestTotal    : -1,
+        bestLocation: d ? d.bestLocation : 0,
+        bestStatus:   d ? d.bestStatus   : 0,
+        plays:        d ? d.plays        : 0,
+      };
+    });
+
+    const byName = (a, b) => a.animal.name.localeCompare(b.animal.name);
+    if (sort === "score") {
+      entries.sort((a, b) => b.bestTotal - a.bestTotal || byName(a, b));
+    } else if (sort === "alpha") {
+      entries.sort(byName);
+    } else if (sort === "status") {
+      const ord = s => { const i = STATUS_ORDER.indexOf(s); return i === -1 ? 99 : i; };
+      entries.sort((a, b) => ord(a.animal.status) - ord(b.animal.status) || byName(a, b));
+    } else { // "played" — played first (by score), then locked (alpha)
+      entries.sort((a, b) => {
+        if (a.played !== b.played) return a.played ? -1 : 1;
+        return a.played ? (b.bestTotal - a.bestTotal || byName(a, b)) : byName(a, b);
+      });
     }
 
-    // Sort by best total descending
-    const rows = ids
-      .map(id => ({ id, animal: ANIMALS.find(a => a.id === id), ...dex[id] }))
-      .filter(r => r.animal)
-      .sort((a, b) => b.bestTotal - a.bestTotal);
-
-    const collected = rows.length;
-    const pct = Math.round(collected / totalAnimals * 100);
-
-    const rowHtml = rows.map(r => {
-      const meta = STATUS_META[r.animal.status] || STATUS_META["LC"];
+    const cardHtml = entries.map(e => {
+      if (!e.played) {
+        return `
+          <div class="dex-card dex-card--locked">
+            <span class="dex-card-emoji">❓</span>
+            <span class="dex-card-name">?????</span>
+            <span class="dex-card-score">🔒</span>
+          </div>`;
+      }
+      const meta = STATUS_META[e.animal.status] || STATUS_META["LC"];
       return `
-        <div class="dex-row">
-          <span class="dex-emoji">${r.animal.emoji || "🐾"}</span>
-          <span class="dex-info">
-            <span class="dex-name">${r.animal.name}</span>
-            <span class="dex-sub">${r.plays} play${r.plays>1?"s":""} · 📍 ${r.bestLocation.toLocaleString()} · 🏷 ${r.bestStatus.toLocaleString()}</span>
-          </span>
-          <span class="dex-best">${r.bestTotal.toLocaleString()}</span>
+        <div class="dex-card">
+          <span class="dex-card-emoji">${e.animal.emoji || "🐾"}</span>
+          <span class="dex-card-name">${e.animal.name}</span>
+          <span class="dex-card-badge" style="background:${meta.bg};color:${meta.color}">${e.animal.status}</span>
+          <span class="dex-card-score">${e.bestTotal.toLocaleString()}</span>
+          <span class="dex-card-sub">📍 ${e.bestLocation.toLocaleString()} · 🏷 ${e.bestStatus.toLocaleString()} · ${e.plays}×</span>
         </div>`;
     }).join("");
 
+    const sortBtn = (key, label) =>
+      `<button class="dex-sort-btn${sort===key?" active":""}" data-sort="${key}">${label}</button>`;
+
     el.innerHTML = `
       <div class="dex-summary">
-        <strong>${collected}</strong> of <strong>${totalAnimals}</strong> animals played (${pct}%)
+        <strong>${collected}</strong> of <strong>${totalAnimals}</strong> animals discovered (${pct}%)
         <div class="stats-bar-track" style="margin-top:8px"><div class="stats-bar-fill" style="width:${pct}%"></div></div>
       </div>
-      <div class="dex-list">${rowHtml}</div>
-      <p class="stats-foot">Best score per animal across Daily and Free Play. Stored on this device.</p>
+      <div class="dex-sort-bar">
+        ${sortBtn("played","Discovered")}
+        ${sortBtn("score","Top score")}
+        ${sortBtn("status","Status")}
+        ${sortBtn("alpha","A–Z")}
+      </div>
+      <div class="dex-grid">${cardHtml}</div>
+      <p class="stats-foot">Best score per animal across Daily and Free Play. Locked animals appear once you play them.</p>
     `;
+
+    el.querySelectorAll(".dex-sort-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        this._dexSort = btn.dataset.sort;
+        this.renderDex();
+      });
+    });
   },
 
   closeModal() {
