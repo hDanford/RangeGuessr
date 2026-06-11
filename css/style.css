@@ -348,6 +348,21 @@ nav {
   color: #fff;
 }
 
+.status-group--dd .status-option {
+  background: #f4f2ec;
+  border-color: #b8b5aa;
+  color: #444441;
+}
+.status-group--dd .status-option:hover {
+  background: #eae7de;
+  border-color: #888480;
+}
+.status-group--dd .status-option.selected {
+  background: #444441;
+  border-color: #444441;
+  color: #fff;
+}
+
 .status-option {
   flex-shrink: 0;
   background: var(--parchment);
