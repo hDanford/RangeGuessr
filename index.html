@@ -68,11 +68,13 @@
   </div>
 
   <!-- Map -->
-  <div class="map-wrap">
+  <div class="map-wrap" style="position:relative;">
     <svg id="world-svg" viewBox="0 0 900 460" xmlns="http://www.w3.org/2000/svg"
          role="img" aria-label="World map — click to place your guess"></svg>
+    <button id="zoom-reset-btn" title="Reset zoom (or double-click map)" style="display:none;">Reset zoom ✕</button>
   </div>
   <p class="map-instruction" id="map-instruction">Click the map to place your guess</p>
+  <p class="map-zoom-hint">Scroll to zoom · drag to pan · double-click to reset</p>
 
   <div class="status-picker-wrap">
     <p class="picker-label">Conservation status guess:</p>
