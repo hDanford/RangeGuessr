@@ -814,3 +814,31 @@ footer a:hover { color: #fff; }
 .content-page a { color:var(--forest-lite); }
 .content-updated { font-size:0.8rem; color:var(--ink-lite); margin-top:0; }
 .content-foot { margin-top:36px; padding-top:16px; border-top:1px solid var(--border); font-size:0.85rem; }
+
+/* ── Free Play stats grid variant ─────────────────────────────────────────── */
+.stats-grid--3 { grid-template-columns:repeat(3,1fr); }
+@media (max-width:420px){ .stats-grid--3 { grid-template-columns:repeat(3,1fr); } .stats-grid--3 .stats-num { font-size:1.05rem; } }
+.stats-empty-sm { color:var(--ink-lite); font-size:0.85rem; padding:4px 0 8px; }
+
+/* ── Animal Dex ───────────────────────────────────────────────────────────── */
+.dex-summary { font-size:0.9rem; color:var(--ink-mid); margin-bottom:16px; }
+.dex-summary strong { color:var(--forest); }
+.dex-list { display:flex; flex-direction:column; gap:6px; max-height:48vh; overflow-y:auto; }
+.dex-row {
+  display:flex; align-items:center; gap:10px;
+  background:var(--parchment); border-radius:8px; padding:8px 12px;
+}
+.dex-emoji { font-size:1.4rem; flex:0 0 auto; }
+.dex-info { display:flex; flex-direction:column; flex:1 1 auto; min-width:0; }
+.dex-name { font-weight:600; color:var(--ink); font-size:0.92rem; }
+.dex-sub  { font-size:0.7rem; color:var(--ink-lite); }
+.dex-best { font-weight:700; color:var(--forest); font-variant-numeric:tabular-nums; flex:0 0 auto; }
+
+/* ── Footer contact ───────────────────────────────────────────────────────── */
+.footer-contact {
+  max-width:520px; margin:0 auto 16px; padding:16px 20px;
+  background:rgba(255,255,255,0.06); border-radius:10px; text-align:center;
+}
+.footer-contact strong { display:block; color:var(--cream); font-size:1rem; margin-bottom:4px; }
+.footer-contact p { margin:4px 0; font-size:0.85rem; }
+.footer-contact-links a { font-weight:600; white-space:nowrap; }
