@@ -42,11 +42,7 @@ const UI = {
 
   // ── Map construction ──────────────────────────────────────────────────────
   buildMapBase() {
-    // Ocean bg
-    const ocean = document.createElementNS("http://www.w3.org/2000/svg","rect");
-    ocean.setAttribute("width","900"); ocean.setAttribute("height","460");
-    ocean.setAttribute("fill","#a8d8ea");
-    this.svgEl.appendChild(ocean);
+    // Background terrain handled by CSS background-image on .map-wrap
 
     // Country fills from countries.js (Natural Earth data)
     Object.entries(COUNTRY_PATHS).forEach(([iso, entry]) => {
