@@ -61,6 +61,7 @@
     <button class="nav-btn"        id="btn-freeplay">Free Play</button>
     <button class="nav-btn"        id="btn-history">History</button>
     <button class="nav-btn"        id="btn-stats">Stats</button>
+    <button class="nav-btn"        id="btn-dex">Animals</button>
     <button class="nav-btn"        id="btn-how">How to Play</button>
     <button class="nav-btn nav-btn--donate" id="btn-donate">Donate</button>
   </nav>
@@ -234,7 +235,16 @@
         <p>Unlimited animals in random order. Score accumulates for your session but doesn't affect your daily streak.</p>
       </div>
     </div>
-  </div>  <!-- Stats -->
+  </div>  </div>  <!-- Animal Dex -->
+  <div class="modal" id="modal-dex" style="display:none">
+    <div class="modal-header">
+      <span class="modal-title">🐾 Animals Played</span>
+      <button class="modal-close" onclick="UI.closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="dex-content"></div>
+  </div>
+
+  <!-- Stats -->
   <div class="modal" id="modal-stats" style="display:none">
     <div class="modal-header">
       <span class="modal-title">📊 Your Stats</span>
@@ -280,7 +290,16 @@
 
 </div>
 <footer>
-  <p>RangeGuessr: Conservation Guessing Game &nbsp;|&nbsp; <a href="about.html">About</a> &nbsp;|&nbsp; <a href="privacy.html">Privacy</a> &nbsp;|&nbsp; Occurrence data & images: <a href="https://www.gbif.org" target="_blank" rel="noopener">GBIF.org</a> (CC BY 4.0) &nbsp;|&nbsp; Map: <a href="https://www.naturalearthdata.com" target="_blank" rel="noopener">Natural Earth</a></p>
+  <div class="footer-contact" id="contact">
+    <strong>Get in touch</strong>
+    <p>Have an animal suggestion, found a bug, or want to share feedback? Reach out:</p>
+    <p class="footer-contact-links">
+      <a href="mailto:hello@rangeguessr.com">✉ hello@rangeguessr.com</a>
+      &nbsp;·&nbsp;
+      <a href="https://discord.gg/your-invite" target="_blank" rel="noopener">💬 Discord</a>
+    </p>
+  </div>
+  <p>RangeGuessr: Conservation Guessing Game &nbsp;|&nbsp; <a href="about.html">About</a> &nbsp;|&nbsp; <a href="privacy.html">Privacy</a> &nbsp;|&nbsp; <a href="#contact">Contact</a> &nbsp;|&nbsp; Occurrence data & images: <a href="https://www.gbif.org" target="_blank" rel="noopener">GBIF.org</a> (CC BY 4.0) &nbsp;|&nbsp; Map: <a href="https://www.naturalearthdata.com" target="_blank" rel="noopener">Natural Earth</a></p>
 </footer>
 
 <!-- Scripts -->
