@@ -93,6 +93,10 @@ function calcLocationScore(lat, lng, rangePolygons) {
 }
 
 function calcStatusScore(guessedStatus, actualStatus) {
+  // DD is outside the threat spectrum — special flat scoring
+  if (actualStatus === 'DD') {
+    return guessedStatus === 'DD' ? 5000 : 4000;
+  }
   const guessOrder  = STATUS_ORDER.indexOf(guessedStatus);
   const actualOrder = STATUS_ORDER.indexOf(actualStatus);
   const steps = Math.abs(guessOrder - actualOrder);
