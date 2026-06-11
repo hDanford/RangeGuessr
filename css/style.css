@@ -235,19 +235,22 @@ nav {
 
 /* ─── Map ───────────────────────────────────────────────────────────────────── */
 .map-wrap {
+  background-image: url('../img/terrain.jpg');
+  background-size: 100% 100%;
   border: 2px solid var(--forest-mid);
   border-radius: var(--radius);
   overflow: hidden;
   cursor: crosshair;
   box-shadow: var(--shadow);
   margin-bottom: 8px;
-  background: #a8d8ea;
+  background: transparent;
 }
 
 #world-svg {
   display: block;
   width: 100%;
   height: auto;
+  background: transparent;
 }
 
 #zoom-reset-btn {
@@ -282,12 +285,12 @@ nav {
 }
 
 .country {
-  fill: #c8dba0;
-  stroke: #fff;
-  stroke-width: 0.4;
+  fill: rgba(255, 255, 255, 0.08);
+  stroke: rgba(255, 255, 255, 0.75);
+  stroke-width: 0.6;
   transition: fill 0.1s;
 }
-.country:hover { fill: #aec98a; }
+.country:hover { fill: rgba(255, 255, 255, 0.22); }
 
 .map-instruction {
   font-size: 0.82rem;
