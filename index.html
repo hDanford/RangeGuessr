@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- build: modals-fix-2 -->
+<!-- build: stats-tabs-3 -->
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
@@ -60,9 +60,7 @@
   <nav>
     <button class="nav-btn active" id="btn-daily">Daily</button>
     <button class="nav-btn"        id="btn-freeplay">Free Play</button>
-    <button class="nav-btn"        id="btn-history">History</button>
     <button class="nav-btn"        id="btn-stats">Stats</button>
-    <button class="nav-btn"        id="btn-dex">Animals</button>
     <button class="nav-btn"        id="btn-how">How to Play</button>
     <button class="nav-btn nav-btn--donate" id="btn-donate">Donate</button>
   </nav>
@@ -181,15 +179,6 @@
 <!-- ── Modals ── -->
 <div class="modal-overlay" id="modal-overlay">
 
-  <!-- History -->
-  <div class="modal" id="modal-history">
-    <div class="modal-header">
-      <span class="modal-title">📅 Your History</span>
-      <button class="modal-close" id="modal-close">✕</button>
-    </div>
-    <div class="modal-body" id="history-content"></div>
-  </div>
-
   <!-- How to play -->
   <div class="modal" id="modal-how" style="display:none">
     <div class="modal-header">
@@ -237,22 +226,22 @@
     </div>
   </div>
 
-  <!-- Animal Dex -->
-  <div class="modal" id="modal-dex" style="display:none">
-    <div class="modal-header">
-      <span class="modal-title">🐾 Animals Played</span>
-      <button class="modal-close" onclick="UI.closeModal()">✕</button>
-    </div>
-    <div class="modal-body" id="dex-content"></div>
-  </div>
-
-  <!-- Stats -->
+  <!-- Stats (tabbed: Stats / History / Animals) -->
   <div class="modal" id="modal-stats" style="display:none">
     <div class="modal-header">
-      <span class="modal-title">📊 Your Stats</span>
+      <span class="modal-title">📊 Your Progress</span>
       <button class="modal-close" onclick="UI.closeModal()">✕</button>
     </div>
-    <div class="modal-body" id="stats-content"></div>
+    <div class="stats-tabs" id="stats-tabs">
+      <button class="stats-tab active" data-tab="stats">Stats</button>
+      <button class="stats-tab" data-tab="history">History</button>
+      <button class="stats-tab" data-tab="dex">Animals</button>
+    </div>
+    <div class="modal-body">
+      <div class="stats-tab-panel" id="tabpanel-stats"></div>
+      <div class="stats-tab-panel" id="tabpanel-history" style="display:none"></div>
+      <div class="stats-tab-panel" id="tabpanel-dex" style="display:none"></div>
+    </div>
   </div>
 
   <!-- Donate -->
