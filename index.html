@@ -40,16 +40,6 @@
 </head>
 <body>
 
-<!-- ── Top ad ── -->
-<div class="ad-slot" aria-label="Advertisement">
-  <!-- AdSense leaderboard 728×90 — uncomment when live:
-  <ins class="adsbygoogle" style="display:inline-block;width:728px;height:90px"
-       data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX"></ins>
-  <script>(adsbygoogle=window.adsbygoogle||[]).push({});</script>
-  -->
-  <span class="ad-label">Advertisement</span>
-</div>
-
 <!-- ── Header ── -->
 <header>
   <a class="logo" href="/">
@@ -63,6 +53,25 @@
     <button class="nav-btn"        id="btn-stats">Stats</button>
     <button class="nav-btn"        id="btn-how">How to Play</button>
     <button class="nav-btn nav-btn--donate" id="btn-donate">Donate</button>
+    <!-- ── Conservation partner logos (top row, right of Donate) ──
+         Replace each src with the org's logo and each href with their site.
+         Missing images show a labeled placeholder instead of a broken icon. -->
+    <a class="conservation-logo" href="#" target="_blank" rel="noopener" title="Conservation partner"
+       style="display:inline-flex;align-items:center;justify-content:center;height:34px;min-width:84px;padding:3px 8px;border:1px dashed var(--border,#cdd6cd);border-radius:8px;text-decoration:none;">
+      <img src="img/partner-1.png" alt="Conservation partner 1"
+           style="max-height:26px;max-width:104px;object-fit:contain;display:block;"
+           onload="this.nextElementSibling.style.display='none';"
+           onerror="this.style.display='none';"/>
+      <span style="font-size:10px;color:var(--muted,#7a8a7a);">Logo 1</span>
+    </a>
+    <a class="conservation-logo" href="#" target="_blank" rel="noopener" title="Conservation partner"
+       style="display:inline-flex;align-items:center;justify-content:center;height:34px;min-width:84px;padding:3px 8px;border:1px dashed var(--border,#cdd6cd);border-radius:8px;text-decoration:none;">
+      <img src="img/partner-2.png" alt="Conservation partner 2"
+           style="max-height:26px;max-width:104px;object-fit:contain;display:block;"
+           onload="this.nextElementSibling.style.display='none';"
+           onerror="this.style.display='none';"/>
+      <span style="font-size:10px;color:var(--muted,#7a8a7a);">Logo 2</span>
+    </a>
   </nav>
   <div class="streak-badge" id="streak-display"></div>
 </header>
@@ -164,16 +173,16 @@
     <div class="next-countdown" id="next-countdown" style="display:none"></div>
   </div>
 
-  <!-- Bottom ad -->
-  <div class="ad-slot bottom" aria-label="Advertisement">
-    <!-- AdSense responsive — uncomment when live:
-    <ins class="adsbygoogle" style="display:block"
-         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX"
-         data-ad-format="auto" data-full-width-responsive="true"></ins>
-    <script>(adsbygoogle=window.adsbygoogle||[]).push({});</script>
-    -->
-    <span class="ad-label">Advertisement</span>
-  </div>
+  <!-- Custom ad — replace src with your ad image and href with where it should link.
+       Recommended image width ~728px (or any 6:1–8:1 banner). Falls back to a labeled box if missing. -->
+  <a class="custom-ad" href="#" target="_blank" rel="noopener"
+     style="display:flex;align-items:center;justify-content:center;min-height:90px;margin:18px auto 0;max-width:728px;border:1px dashed var(--border,#cdd6cd);border-radius:10px;text-decoration:none;overflow:hidden;">
+    <img src="img/custom-ad.png" alt="Sponsor"
+         style="max-width:100%;height:auto;display:block;"
+         onload="this.nextElementSibling.style.display='none';"
+         onerror="this.style.display='none';"/>
+    <span style="font-size:12px;color:var(--muted,#7a8a7a);">Your custom ad image goes here</span>
+  </a>
 </main>
 
 <!-- ── Modals ── -->
@@ -267,6 +276,25 @@
         </div>
       </div>
       <div class="donate-actions">
+        <!-- Conservation partner logos — same orgs as the top row -->
+        <div class="donate-logos" style="display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;margin-bottom:14px;">
+          <a class="conservation-logo" href="#" target="_blank" rel="noopener" title="Conservation partner"
+             style="display:flex;align-items:center;justify-content:center;height:48px;min-width:130px;padding:4px 10px;border:1px dashed var(--border,#cdd6cd);border-radius:10px;text-decoration:none;">
+            <img src="img/partner-1.png" alt="Conservation partner 1"
+                 style="max-height:36px;max-width:150px;object-fit:contain;display:block;"
+                 onload="this.nextElementSibling.style.display='none';"
+                 onerror="this.style.display='none';"/>
+            <span style="font-size:11px;color:var(--muted,#7a8a7a);">Partner logo 1</span>
+          </a>
+          <a class="conservation-logo" href="#" target="_blank" rel="noopener" title="Conservation partner"
+             style="display:flex;align-items:center;justify-content:center;height:48px;min-width:130px;padding:4px 10px;border:1px dashed var(--border,#cdd6cd);border-radius:10px;text-decoration:none;">
+            <img src="img/partner-2.png" alt="Conservation partner 2"
+                 style="max-height:36px;max-width:150px;object-fit:contain;display:block;"
+                 onload="this.nextElementSibling.style.display='none';"
+                 onerror="this.style.display='none';"/>
+            <span style="font-size:11px;color:var(--muted,#7a8a7a);">Partner logo 2</span>
+          </a>
+        </div>
         <a class="donate-btn"
            href="https://buy.stripe.com/6oU4gybtUd712Wp5gu8so00"
            target="_blank"
