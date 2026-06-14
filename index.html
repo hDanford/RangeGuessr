@@ -54,22 +54,25 @@
     <button class="nav-btn"        id="btn-how">How to Play</button>
     <button class="nav-btn nav-btn--donate" id="btn-donate">Donate</button>
     <!-- ── Conservation partner logos (top row, right of Donate) ── -->
-    <a class="conservation-logo" href="https://www.iucnredlist.org/" target="_blank" rel="noopener" title="IUCN Red List"
-       style="display:inline-flex;align-items:center;justify-content:center;height:34px;min-width:84px;padding:3px 8px;border:1px dashed var(--border,#cdd6cd);border-radius:8px;text-decoration:none;">
-      <img src="img/IUCN_Red_List_Logo.png" alt="IUCN Red List"
-           style="max-height:26px;max-width:104px;object-fit:contain;display:block;"
-           onload="this.nextElementSibling.style.display='none';"
-           onerror="this.style.display='none';"/>
-      <span style="font-size:10px;color:var(--muted,#7a8a7a);">IUCN Red List</span>
-    </a>
-    <a class="conservation-logo" href="https://abcbirds.org/" target="_blank" rel="noopener" title="American Bird Conservancy"
-       style="display:inline-flex;align-items:center;justify-content:center;height:34px;min-width:84px;padding:3px 8px;border:1px dashed var(--border,#cdd6cd);border-radius:8px;text-decoration:none;">
-      <img src="img/ABC_Logo.png" alt="American Bird Conservancy"
-           style="max-height:26px;max-width:104px;object-fit:contain;display:block;"
-           onload="this.nextElementSibling.style.display='none';"
-           onerror="this.style.display='none';"/>
-      <span style="font-size:10px;color:var(--muted,#7a8a7a);">ABC Birds</span>
-    </a>
+    <div style="display:inline-flex;align-items:center;gap:6px;background:#fff;border-radius:8px;padding:4px 8px;">
+      <a class="conservation-logo" href="https://www.iucnredlist.org/" target="_blank" rel="noopener" title="IUCN Red List"
+         style="display:inline-flex;align-items:center;justify-content:center;height:26px;min-width:60px;text-decoration:none;">
+        <img src="img/IUCN_Red_List_Logo.png" alt="IUCN Red List"
+             style="max-height:22px;max-width:90px;object-fit:contain;display:block;"
+             onload="this.nextElementSibling.style.display='none';"
+             onerror="this.style.display='none';"/>
+        <span style="font-size:10px;color:#7a8a7a;">IUCN Red List</span>
+      </a>
+      <div style="width:1px;height:22px;background:#d4d0c4;flex-shrink:0;"></div>
+      <a class="conservation-logo" href="https://abcbirds.org/" target="_blank" rel="noopener" title="American Bird Conservancy"
+         style="display:inline-flex;align-items:center;justify-content:center;height:26px;min-width:60px;text-decoration:none;">
+        <img src="img/ABC_Logo.png" alt="American Bird Conservancy"
+             style="max-height:22px;max-width:90px;object-fit:contain;display:block;"
+             onload="this.nextElementSibling.style.display='none';"
+             onerror="this.style.display='none';"/>
+        <span style="font-size:10px;color:#7a8a7a;">ABC Birds</span>
+      </a>
+    </div>
   </nav>
   <div class="streak-badge" id="streak-display"></div>
 </header>
