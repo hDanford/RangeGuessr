@@ -194,9 +194,12 @@ function calcStreak() {
   // If today hasn't been played yet, the streak isn't broken until tomorrow —
   // start counting from yesterday.
   if (!history[fmt(check)]) check.setDate(check.getDate()-1);
-  for (let i = 0; i < 365; i++) {
-    if (history[fmt(check)]) { streak++; check.setDate(check.getDate()-1); }
-    else break;
+  // No fixed cap: a streak can't be longer than the number of days played,
+  // so that count works as a safety bound instead of 365.
+  const maxDays = Object.keys(history).length;
+  while (streak < maxDays && history[fmt(check)]) {
+    streak++;
+    check.setDate(check.getDate()-1);
   }
   return streak;
 }
